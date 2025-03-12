@@ -1,11 +1,4 @@
-import { Sequelize } from "sequelize";
 import sequelize from "../config/database";
-import Utilisateur from "./utilisateurModel";
-import Profil from "./profilModel";
-import Client from "./clientModel";
-import Produit from "./produitModel";
-import Commande from "./commandeModel";
-
 const syncDatabase = async () => {
     try {
     //alter: true Met à jour la structure automatiquement la structure de la base de données
@@ -16,4 +9,4 @@ const syncDatabase = async () => {
     console.error("Erreur lors de la synchronisation :", error);
     }
    };
-   export { syncDatabase, Utilisateur, Profil, Client, Produit, Commande};
+   export { syncDatabase};

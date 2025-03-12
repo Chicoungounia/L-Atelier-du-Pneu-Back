@@ -4,7 +4,7 @@ const swaggerOptions = {
  definition: {
  openapi: '3.0.0', // Version de l'OpenAPI Specification
  info: {
- title: 'API Documentation',
+ title: 'API L\'Atelier du Pneu',
  version: '1.0.0',
  description: 'Documentation de l’API Express.js avec Swagger',
  },

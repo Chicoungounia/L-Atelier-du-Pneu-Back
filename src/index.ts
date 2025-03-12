@@ -2,9 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { testConnection } from './config/database';
 import { syncDatabase } from './models/syncModels';
-import userRoutes from './routes/userRoutes';
 import swaggerDocs from './config/swagger';
 import swaggerUi from 'swagger-ui-express'
+import authRoutes from './routes/authRoutes';
 
 
 //Création d'un serveur Express
@@ -26,7 +26,7 @@ app.use(express.json());
 //TODO ajouter ici connection à la BDD
 
 //TODO ajouter ici les routes
-app.use('/users', userRoutes)
+app.use('/users', authRoutes)
 
 
 // Swagger route
