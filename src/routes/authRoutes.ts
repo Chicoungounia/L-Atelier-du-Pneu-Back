@@ -7,9 +7,9 @@ const router = express.Router();
  * @swagger
  * /users/register:
  *   post:
- *     summary: Crée un nouvel utilisateur
- *     description: Permet de créer un nouvel utilisateur avec un mot de passe haché.
- *     tags:
+ *     summary: Inscription d'un nouvel utilisateur
+ *     description: Permet à un utilisateur de s'inscrire avec son nom, prénom, pseudo, email et mot de passe.
+ *     tags: 
  *       - Authentification
  *     requestBody:
  *       required: true
@@ -17,23 +17,33 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               first_name:
- *                 type: string
- *               surname:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
  *             required:
- *               - first_name
- *               - surname
+ *               - nom
+ *               - prenom
+ *               - pseudo
  *               - email
  *               - password
+ *             properties:
+ *               nom:
+ *                 type: string
+ *                 example: "Dupont"
+ *               prenom:
+ *                 type: string
+ *                 example: "Jean"
+ *               pseudo:
+ *                 type: string
+ *                 example: "jdupont"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "jean.dupont@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "MotDePasse123!"
  *     responses:
  *       201:
- *         description: L'utilisateur a été créé avec succès
+ *         description: Utilisateur créé avec succès
  *         content:
  *           application/json:
  *             schema:
@@ -41,25 +51,52 @@ const router = express.Router();
  *               properties:
  *                 id:
  *                   type: integer
- *                 first_name:
+ *                   example: 1
+ *                 nom:
  *                   type: string
- *                 surname:
+ *                   example: "Dupont"
+ *                 prenom:
  *                   type: string
+ *                   example: "Jean"
+ *                 pseudo:
+ *                   type: string
+ *                   example: "jdupont"
  *                 email:
  *                   type: string
+ *                   format: email
+ *                   example: "jean.dupont@example.com"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
  *       400:
- *         description: L'utilisateur existe déjà ou des champs sont manquants
+ *         description: Requête invalide (champs manquants ou utilisateur existant)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "L'email est déjà utilisé ou des champs sont manquants."
  *       500:
  *         description: Erreur interne du serveur
- */
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ */               
 router.post('/register', register);
 
 /**
  * @swagger
  * /users/login:
  *   post:
- *     summary: Connecte un utilisateur
- *     description: Permet à un utilisateur de se connecter avec son email et son mot de passe.
+ *     summary: Connexion d'un utilisateur
+ *     description: Permet à un utilisateur de se connecter en fournissant son email et son mot de passe. Renvoie un token JWT en cas de succès.
  *     tags:
  *       - Authentification
  *     requestBody:
@@ -68,25 +105,72 @@ router.post('/register', register);
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
  *             required:
  *               - email
  *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "jean.dupont@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "MotDePasse123!"
  *     responses:
  *       200:
- *         description: Connexion réussie, un token JWT est renvoyé
+ *         description: Connexion réussie, renvoie un token JWT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Connexion réussie"
+ *                 token:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       400:
- *         description: L'email ou le mot de passe sont manquants
+ *         description: Requête invalide (champs manquants)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "L'email et le mot de passe sont requis."
  *       401:
- *         description: Le mot de passe est incorrect
+ *         description: Mot de passe incorrect
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Mot de passe incorrect."
  *       404:
- *         description: L'utilisateur n'a pas été trouvé
+ *         description: Utilisateur non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Utilisateur non trouvé."
  *       500:
  *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Une erreur interne s'est produite."
  */
 router.post('/login', login);
 

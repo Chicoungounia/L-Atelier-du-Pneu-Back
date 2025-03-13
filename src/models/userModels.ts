@@ -4,10 +4,11 @@ import sequelize from "../config/database";
 // Définition des attributs d'un utilisateur
 interface UserAttributes {
     id?: number;
-    first_name: string;
-    surname: string;
+    nom: string;
+    prenom: string;
+    speudo: string;
     email: string;
-    role?: 'Admin' | 'Storekeeper' | 'Employee';
+    role?: 'Admin' | 'Ouvrier' | 'Employé';
     hashedpassword: string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -15,10 +16,11 @@ interface UserAttributes {
 
 export class User extends Model<UserAttributes> implements UserAttributes {
     public id!: number;
-    public first_name!: string;
-    public surname!: string;
+    public nom!: string;
+    public prenom!: string;
+    public speudo!: string;
     public email!: string;
-    public role!: 'Admin' | 'Storekeeper' | 'Employee';
+    public role!: 'Admin' | 'Ouvrier' | 'Employé';
     public hashedpassword!: string;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -31,11 +33,15 @@ User.init(
             autoIncrement: true,
             primaryKey: true,
         },
-        first_name: {
+        nom: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        surname: {
+        prenom: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        speudo: { // Correction de "speudo"
             type: DataTypes.STRING,
             allowNull: false,
         },
@@ -50,9 +56,9 @@ User.init(
         role: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: 'Employee',
+            defaultValue: 'Employé', // Correction du défaut pour correspondre aux valeurs valides
             validate: {
-                isIn: [['Admin', 'Storekeeper', 'Employee']],
+                isIn: [['Admin', 'Ouvrier', 'Employé']], // Correction des valeurs autorisées
             },
         },
         hashedpassword: {
@@ -63,6 +69,6 @@ User.init(
     {
         sequelize,
         tableName: "users",
-        timestamps: true, // Ajoute createdAt & updatedAt
+        timestamps: true, // Assure la gestion automatique de createdAt & updatedAt
     }
 );
