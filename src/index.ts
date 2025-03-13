@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express'
 import authRoutes from './routes/authRoutes';
 import produitRoutes from './routes/produitRoutes';
 import clientRoutes from './routes/clientRoutes';
+import rendezVousRoutes from './routes/rendezVousRoutes';
 // import { v2 as cloudinary } from 'cloudinary';
 
 
@@ -32,7 +33,7 @@ app.use(express.json());
 app.use('/users', authRoutes)
 app.use('/produits', produitRoutes)
 app.use('/clients', clientRoutes)
-
+app.use("/rendezvous", rendezVousRoutes);
 
 
 // Swagger route
