@@ -6,6 +6,7 @@ import swaggerDocs from './config/swagger';
 import swaggerUi from 'swagger-ui-express'
 import authRoutes from './routes/authRoutes';
 import produitRoutes from './routes/produitRoutes';
+import clientRoutes from './routes/clientRoutes';
 // import { v2 as cloudinary } from 'cloudinary';
 
 
@@ -30,6 +31,7 @@ app.use(express.json());
 //TODO ajouter ici les routes
 app.use('/users', authRoutes)
 app.use('/produits', produitRoutes)
+app.use('/clients', clientRoutes)
 
 
 
