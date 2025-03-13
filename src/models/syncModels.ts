@@ -1,4 +1,5 @@
 import sequelize from "../config/database";
+import Produit from "./produitModel";
 const syncDatabase = async () => {
     try {
     //alter: true Met à jour la structure automatiquement la structure de la base de données
@@ -9,4 +10,4 @@ const syncDatabase = async () => {
     console.error("Erreur lors de la synchronisation :", error);
     }
    };
-   export { syncDatabase};
+   export { syncDatabase, Produit};

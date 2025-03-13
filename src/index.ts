@@ -5,6 +5,8 @@ import { syncDatabase } from './models/syncModels';
 import swaggerDocs from './config/swagger';
 import swaggerUi from 'swagger-ui-express'
 import authRoutes from './routes/authRoutes';
+import produitRoutes from './routes/produitRoutes';
+// import { v2 as cloudinary } from 'cloudinary';
 
 
 //Création d'un serveur Express
@@ -27,6 +29,8 @@ app.use(express.json());
 
 //TODO ajouter ici les routes
 app.use('/users', authRoutes)
+app.use('/produits', produitRoutes)
+
 
 
 // Swagger route
@@ -38,3 +42,44 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.listen(PORT, () => {
  console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// async function() {
+
+//     // Configuration
+//     cloudinary.config({ 
+//         cloud_name: 'dl3in2brl', 
+//         api_key: '235871692275173', 
+//         api_secret: '<your_api_secret>' // Click 'View API Keys' above to copy your API secret
+//     });
+    
+//     // Upload an image
+//      const uploadResult = await cloudinary.uploader
+//        .upload(
+//            'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
+//                public_id: 'shoes',
+//            }
+//        )
+//        .catch((error) => {
+//            console.log(error);
+//        });
+    
+//     console.log(uploadResult);
+    
+//     // Optimize delivery by resizing and applying auto-format and auto-quality
+//     const optimizeUrl = cloudinary.url('shoes', {
+//         fetch_format: 'auto',
+//         quality: 'auto'
+//     });
+    
+//     console.log(optimizeUrl);
+    
+//     // Transform the image: auto-crop to square aspect_ratio
+//     const autoCropUrl = cloudinary.url('shoes', {
+//         crop: 'auto',
+//         gravity: 'auto',
+//         width: 500,
+//         height: 500,
+//     });
+    
+//     console.log(autoCropUrl);    
+// })();
