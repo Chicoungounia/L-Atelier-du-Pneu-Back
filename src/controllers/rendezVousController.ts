@@ -1,50 +1,92 @@
+import { Op } from "sequelize";
 import { Request, Response } from "express";
-import RendezVous from "../models/rendezVousModel";
-import Client from "../models/clientModel";
-import { User } from "../models/userModels";
-
+import RendezVous from "../models/rendezVousModel"; // Modèle RendezVous
+import { User } from "../models/userModels"; // Modèle User
 
 export const ajouterRendezVous = async (req: Request, res: Response) => {
     try {
-        const { clientId, ouvrierId, dateHeure, heureFin, status } = req.body;
+        const { clientId, userId, pont, dateHeure, heureFin, status } = req.body;
 
-        if (!clientId || !ouvrierId || !dateHeure || !heureFin) {
+        // Vérification des champs obligatoires
+        if (!clientId || !userId || !pont || !dateHeure || !heureFin) {
             res.status(400).json({ message: "Tous les champs requis doivent être fournis." });
+            return;
+        }
+
+        // Vérifier si l'utilisateur est un Ouvrier
+        const user = await User.findByPk(userId);
+        if (!user || user.role !== "Ouvrier") {
+            res.status(400).json({ message: "L'utilisateur doit avoir le rôle 'Ouvrier'." });
             return;
         }
 
         const dateDebut = new Date(dateHeure);
         const dateFin = new Date(heureFin);
 
-        // Vérification des horaires d'ouverture
-        const jour = dateDebut.getDay(); // 1 = Lundi, 5 = Vendredi
-        const heure = dateDebut.getHours();
-        const minutes = dateDebut.getMinutes();
-
-        const heureDebutMatin = 9 * 60; // 09:00 en minutes
-        const heureFinMatin = 12 * 60 + 30; // 12:30 en minutes
-        const heureDebutApresMidi = 13 * 60 + 30; // 13:30 en minutes
-        const heureFinSoir = 19 * 60; // 19:00 en minutes
-
-        const heureRdv = heure * 60 + minutes;
-
-        if (
-            jour < 1 || jour > 5 || // Week-end
-            !(
-                (heureRdv >= heureDebutMatin && heureRdv < heureFinMatin) ||
-                (heureRdv >= heureDebutApresMidi && heureRdv < heureFinSoir)
-            )
-        ) {
-            res.status(400).json({ message: "Rendez-vous en dehors des heures d'ouverture." });
+        // Vérification que le jour est bien entre lundi et samedi (0 = dimanche)
+        const jour = dateDebut.getDay(); // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+        if (jour === 0) {
+            res.status(400).json({ message: "Aucun rendez-vous n'est autorisé le dimanche." });
             return;
         }
 
+        // Vérification que l'heure du rendez-vous est entre 7h00 et 19h00
+        const heure = dateDebut.getHours();
+        const minutes = dateDebut.getMinutes();
+        const heureRdv = heure * 60 + minutes; // Heure en minutes
+
+        const heureDebutJournee = 7 * 60; // 07:00 en minutes
+        const heureFinJournee = 19 * 60;  // 19:00 en minutes
+
+        if (heureRdv < heureDebutJournee || heureRdv >= heureFinJournee) {
+            res.status(400).json({ message: "Les rendez-vous doivent être pris entre 7h00 et 19h00." });
+            return;
+        }
+
+        // Vérification de la disponibilité du pont (pas de chevauchement de rendez-vous)
+        const pontExist = await RendezVous.findOne({
+            where: {
+                pont, // Vérifier si le pont est déjà réservé à cette heure
+                dateDebut: {
+                    [Op.lt]: dateFin, // Si le rendez-vous commence avant la fin du créneau
+                },
+                dateFin: {
+                    [Op.gt]: dateDebut, // Si le rendez-vous finit après le début du créneau
+                },
+            },
+        });
+
+        if (pontExist) {
+            res.status(400).json({ message: `Le pont ${pont} est déjà réservé à cette heure.` });
+            return;
+        }
+
+        // Vérification de la disponibilité de l'ouvrier (pas de chevauchement de rendez-vous avec le même ouvrier)
+        const ouvrierExist = await RendezVous.findOne({
+            where: {
+                userId, // Vérifier si l'ouvrier est déjà réservé à cette heure
+                dateDebut: {
+                    [Op.lt]: dateFin, // Si le rendez-vous commence avant la fin du créneau
+                },
+                dateFin: {
+                    [Op.gt]: dateDebut, // Si le rendez-vous finit après le début du créneau
+                },
+            },
+        });
+
+        if (ouvrierExist) {
+            res.status(401).json({ message: `L'ouvrier est déjà occupé à cette heure.` });
+            return;
+        }
+
+        // Créer le rendez-vous dans la base de données
         const rendezVous = await RendezVous.create({
             clientId,
-            ouvrierId,
-            dateHeure,
-            heureFin,
-            status: status || "Actif",
+            userId,  // Remplacez `ouvrierId` par `userId`
+            pont, // Le pont sur lequel le rendez-vous est pris
+            dateDebut,  // dateHeure
+            dateFin,    // heureFin
+            status: status || "réserver", // Si aucun status n'est fourni, utiliser "réserver" par défaut
         });
 
         res.status(201).json({ message: "Rendez-vous ajouté avec succès", rendezVous });
@@ -55,6 +97,9 @@ export const ajouterRendezVous = async (req: Request, res: Response) => {
         return;
     }
 };
+
+
+
 
 
 // export const modifierRendezVous = async (req: Request, res: Response) => {

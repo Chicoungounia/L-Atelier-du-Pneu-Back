@@ -10,8 +10,9 @@ const router = Router();
  * @swagger
  * /rendezvous/ajouter:
  *   post:
- *     summary: Ajoute un nouveau rendez-vous
- *     description: Crée un rendez-vous en vérifiant que l'heure choisie est dans les horaires d'ouverture (Lundi-Vendredi, 9h-12h30 et 13h30-19h).
+ *     summary: Ajouter un rendez-vous
+ *     description: Crée un nouveau rendez-vous entre un client et un ouvrier à une heure donnée, sur un pont spécifique.
+ *     operationId: ajouterRendezVous
  *     tags:
  *       - RendezVous
  *     requestBody:
@@ -20,34 +21,31 @@ const router = Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - clientId
- *               - ouvrierId
- *               - dateHeure
- *               - heureFin
  *             properties:
  *               clientId:
  *                 type: integer
- *                 example: 1
  *                 description: ID du client qui prend le rendez-vous.
- *               ouvrierId:
+ *               userId:
  *                 type: integer
- *                 example: 2
- *                 description: ID de l'ouvrier qui effectuera le travail.
+ *                 description: ID de l'ouvrier affecté au rendez-vous.
+ *               pont:
+ *                 type: integer
+ *                 description: Le numéro du pont réservé (1, 2, ou 3).
  *               dateHeure:
  *                 type: string
  *                 format: date-time
- *                 example: "2025-03-15T09:30:00Z"
- *                 description: Date et heure de début du rendez-vous.
+ *                 description: La date et l'heure de début du rendez-vous.
  *               heureFin:
  *                 type: string
  *                 format: date-time
- *                 example: "2025-03-15T10:30:00Z"
- *                 description: Heure de fin du rendez-vous.
+ *                 description: La date et l'heure de fin du rendez-vous.
  *               status:
  *                 type: string
- *                 example: "Actif"
- *                 description: Statut du rendez-vous (optionnel, par défaut "Actif").
+ *                 enum:
+ *                   - réserver
+ *                   - reporter
+ *                   - annuler
+ *                 description: Le statut du rendez-vous.
  *     responses:
  *       201:
  *         description: Rendez-vous ajouté avec succès.
@@ -58,11 +56,12 @@ const router = Router();
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Rendez-vous ajouté avec succès"
  *                 rendezVous:
- *                   type: object
+ *                   $ref: '#/components/schemas/RendezVous'
  *       400:
- *         description: Requête invalide (ex. heure en dehors des horaires d'ouverture).
+ *         description: Mauvaise demande, un ou plusieurs champs manquants ou incorrects.
+ *       401:
+ *         description: L'ouvrier est déjà occupé à cette heure.
  *       500:
  *         description: Erreur interne du serveur.
  */
