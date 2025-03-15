@@ -148,3 +148,21 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
 };
+
+export const deleteRendezVous = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const rendezVous = await RendezVous.findByPk(id);
+        if (!rendezVous) {
+            res.status(404).json({ message: "Rendez-vous non trouvé." });
+            return;
+        }
+
+        await rendezVous.destroy();
+        res.status(200).json({ message: "Rendez-vous supprimé avec succès." });
+    } catch (error) {
+        console.error("Erreur lors de la suppression du rendez-vous:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+};

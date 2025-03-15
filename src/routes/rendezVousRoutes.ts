@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ajouterRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
+import { ajouterRendezVous, deleteRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
 
 const router = Router();
 
@@ -186,54 +186,47 @@ router.put("/modifier/:id", modifierRendezVous);
 
 
 
-// /**
-//  * @swagger
-//  * /rendezvous/delete/{id}:
-//  *   delete:
-//  *     summary: Supprimer un rendez-vous
-//  *     description: Permet de supprimer un rendez-vous par son ID.
-//  *     tags: [RendezVous]
-//  *     parameters:
-//  *       - in: path
-//  *         name: id
-//  *         required: true
-//  *         schema:
-//  *           type: integer
-//  *         description: ID du rendez-vous à supprimer
-//  *         example: 1
-//  *     responses:
-//  *       200:
-//  *         description: Rendez-vous supprimé avec succès
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 message:
-//  *                   type: string
-//  *                   example: "Rendez-vous supprimé avec succès"
-//  *       404:
-//  *         description: Rendez-vous non trouvé
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 message:
-//  *                   type: string
-//  *                   example: "Rendez-vous non trouvé"
-//  *       500:
-//  *         description: Erreur interne du serveur
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 message:
-//  *                   type: string
-//  *                   example: "Erreur interne du serveur"
-//  */
-// router.delete("/delete/:id", supprimerRendezVous);
+/**
+ * @swagger
+ * /rendezvous/delete/{id}:
+ *   delete:
+ *     summary: Supprime un rendez-vous
+ *     description: Supprime un rendez-vous existant à partir de son ID.
+ *     tags:
+ *       - Rendez-vous
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du rendez-vous à supprimer
+ *     responses:
+ *       200:
+ *         description: Rendez-vous supprimé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Rendez-vous supprimé avec succès."
+ *       404:
+ *         description: Rendez-vous non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Rendez-vous non trouvé."
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.delete("/delete/:id", deleteRendezVous);
+
 // router.get("/all", obtenirTousLesRendezVous);
 // router.get("/rd/:id", obtenirRendezVousParId);
 
