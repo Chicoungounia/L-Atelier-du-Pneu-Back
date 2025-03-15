@@ -18,11 +18,11 @@ interface RendezVousAttributes {
 class RendezVous extends Model<RendezVousAttributes> implements RendezVousAttributes {
   public id!: number;
   public clientId!: number;
-  public userId!: number; // Remplacez `ouvrierId` par `userId`
+  public userId!: number; 
   public pont!: 1 | 2 | 3; 
   public dateDebut!: Date;
   public dateFin!: Date;
-  public status!: "réserver" | "reporter" | "annuler"; 
+  public status!: "réserver" | "annuler"; 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -42,7 +42,7 @@ RendezVous.init(
         key: "id",
       },
     },
-    userId: { // Remplacez `ouvrierId` par `userId`
+    userId: { 
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -70,7 +70,7 @@ RendezVous.init(
       allowNull: false,
       defaultValue: "réserver", 
       validate: {
-        isIn: [["réserver", "reporter", "annuler"]], 
+        isIn: [["réserver", "annuler"]], 
       },
     },
   },
