@@ -58,6 +58,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
   }
 };
 
+// Modifier un produit
 export const modifierProduit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -77,40 +78,46 @@ export const modifierProduit = async (req: Request, res: Response) => {
       image,
     } = req.body;
 
+    // Vérification que l'ID est un nombre valide
+    if (isNaN(Number(id))) {
+      res.status(400).json({ message: "ID invalide" });
+      return;
+    }
+
+    // Recherche du produit par ID
     const produit = await Produit.findByPk(id);
+
+    // Vérification si le produit existe
     if (!produit) {
       res.status(404).json({ message: "Produit non trouvé" });
       return;
     }
 
- 
-
-    // Mise à jour du produit
-    await produit.update({
-      saison,
-      marque,
-      modele,
-      Largeur_pneu,
-      profil_pneu,
-      type_pneu,
-      diametre,
-      indice_charge,
-      indice_vitesse,
-      renfort,
-      stock,
-      prix,
-      image,
+    // Mise à jour des propriétés du produit
+    const updatedProduit = await produit.update({
+      saison: saison || produit.saison, // Si saison est fourni, mettre à jour, sinon garder l'ancienne valeur
+      marque: marque || produit.marque,
+      modele: modele || produit.modele,
+      Largeur_pneu: Largeur_pneu || produit.Largeur_pneu,
+      profil_pneu: profil_pneu || produit.profil_pneu,
+      type_pneu: type_pneu || produit.type_pneu,
+      diametre: diametre || produit.diametre,
+      indice_charge: indice_charge || produit.indice_charge,
+      indice_vitesse: indice_vitesse || produit.indice_vitesse,
+      renfort: renfort || produit.renfort,
+      stock: stock !== undefined ? stock : produit.stock, // Si stock est fourni, utiliser sinon garder l'ancien
+      prix: prix !== undefined ? prix : produit.prix, // De même pour prix
+      image: image || produit.image,
     });
 
-    res.status(200).json({ message: "Produit modifié avec succès", produit });
-    return;
-
+    // Réponse succès avec le produit mis à jour
+    res.status(200).json({ message: "Produit modifié avec succès", produit: updatedProduit });
   } catch (error) {
     console.error("Erreur lors de la modification du produit:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
-    return;
   }
 };
+
 
 export const deleteProduit = async (req: Request, res: Response) => {
   try {

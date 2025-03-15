@@ -30,7 +30,7 @@ const router = express.Router();
  *               prenom:
  *                 type: string
  *                 example: "Jean"
- *               pseudo:
+ *               speudo:
  *                 type: string
  *                 example: "jdupont"
  *               email:

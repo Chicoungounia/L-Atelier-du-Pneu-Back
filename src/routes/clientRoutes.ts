@@ -24,29 +24,87 @@ const router = express.Router();
  *               nom:
  *                 type: string
  *                 description: Nom du client
+ *                 example: "Dupont"
  *               prenom:
  *                 type: string
  *                 description: Prénom du client (optionnel)
+ *                 example: "Jean"
  *               adresse:
  *                 type: string
  *                 description: Adresse du client
+ *                 example: "12 rue des Fleurs, 75000 Paris"
  *               email:
  *                 type: string
  *                 description: Email du client (optionnel)
+ *                 example: "jean.dupont@example.com"
  *               telephone:
  *                 type: string
  *                 description: Numéro de téléphone du client (optionnel)
+ *                 example: "+33612345678"
  *               status:
  *                 type: string
  *                 enum: ["privé", "professionnel"]
  *                 description: Statut du client
+ *                 example: "privé"
  *     responses:
  *       201:
  *         description: Client ajouté avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 nom:
+ *                   type: string
+ *                   example: "Dupont"
+ *                 prenom:
+ *                   type: string
+ *                   example: "Jean"
+ *                 adresse:
+ *                   type: string
+ *                   example: "12 rue des Fleurs, 75000 Paris"
+ *                 email:
+ *                   type: string
+ *                   example: "jean.dupont@example.com"
+ *                 telephone:
+ *                   type: string
+ *                   example: "+33612345678"
+ *                 status:
+ *                   type: string
+ *                   example: "privé"
  *       400:
- *         description: Requête invalide (champs requis manquants)
+ *         description: Requête invalide (champs requis manquants ou erreur de validation)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Veuillez remplir tous les champs requis."
+ *       401:
+ *         description: Non autorisé (problème d'authentification)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Accès non autorisé. Veuillez vous authentifier."
  *       500:
  *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erreur interne du serveur. Veuillez réessayer plus tard."
  */
 router.post('/ajouter', ajouterClient);
 
@@ -98,7 +156,7 @@ router.post('/ajouter', ajouterClient);
  *                 description: Statut du client
  *                 example: "professionnel"
  *     responses:
- *       200:
+ *       201:
  *         description: Client modifié avec succès
  *         content:
  *           application/json:

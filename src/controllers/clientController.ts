@@ -63,7 +63,7 @@ export const modifierClient = async (req: Request, res: Response) => {
         status,
       });
   
-      res.status(200).json({ message: "Client modifié avec succès", client });
+      res.status(201).json({ message: "Client modifié avec succès", client });
       return 
 
   

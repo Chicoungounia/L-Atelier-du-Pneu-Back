@@ -8,7 +8,7 @@ const router = express.Router();
  * /produits/ajouter:
  *   post:
  *     summary: Ajouter un nouveau produit
- *     description: Crée un nouveau produit avec les informations fournies.
+ *     description: Cette route permet d'ajouter un nouveau produit dans la base de données.
  *     tags:
  *       - Produits
  *     requestBody:
@@ -17,66 +17,123 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - marque
- *               - modele
- *               - Largeur_pneu
- *               - profil_pneu
- *               - type_pneu
- *               - diametre
- *               - indice_charge
- *               - indice_vitesse
- *               - renfort
- *               - stock
- *               - prix
  *             properties:
+ *               saison:
+ *                 type: string
+ *                 example: "été"
  *               marque:
  *                 type: string
- *                 enum: [Michelin, Bridgestone, Hankook, Goodyear]
- *                 example: Michelin
+ *                 example: "Michelin"
  *               modele:
  *                 type: string
- *                 example: Primacy 4
+ *                 example: "Primacy 5"
  *               Largeur_pneu:
- *                 type: integer
- *                 example: 205
+ *                 type: string
+ *                 example: "205"
  *               profil_pneu:
- *                 type: integer
- *                 example: 55
+ *                 type: string
+ *                 example: "55"
  *               type_pneu:
  *                 type: string
- *                 enum: [R, D]
- *                 example: R
+ *                 example: "R"
  *               diametre:
- *                 type: integer
- *                 example: 16
+ *                 type: string
+ *                 example: "16"
  *               indice_charge:
- *                 type: integer
- *                 minimum: 85
- *                 maximum: 130
- *                 example: 91
+ *                 type: string
+ *                 example: "91"
  *               indice_vitesse:
  *                 type: string
- *                 enum: [H, T, V]
- *                 example: H
+ *                 example: "V"
  *               renfort:
  *                 type: string
- *                 enum: [XL, C, LT, RF, RS]
- *                 example: XL
+ *                 example: "XL"
  *               stock:
  *                 type: integer
- *                 example: 50
+ *                 example: 100
  *               prix:
  *                 type: number
- *                 format: float
- *                 example: 99.99
+ *                 example: 120.99
+ *               image:
+ *                 type: string
+ *                 example: "https://example.com/image.jpg"
  *     responses:
  *       201:
  *         description: Produit ajouté avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Produit ajouté avec succès"
+ *                 produit:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     saison:
+ *                       type: string
+ *                       example: "été"
+ *                     marque:
+ *                       type: string
+ *                       example: "Michelin"
+ *                     modele:
+ *                       type: string
+ *                       example: "Primacy 5"
+ *                     Largeur_pneu:
+ *                       type: string
+ *                       example: "205"
+ *                     profil_pneu:
+ *                       type: string
+ *                       example: "55"
+ *                     type_pneu:
+ *                       type: string
+ *                       example: "R"
+ *                     diametre:
+ *                       type: string
+ *                       example: "16"
+ *                     indice_charge:
+ *                       type: string
+ *                       example: "91"
+ *                     indice_vitesse:
+ *                       type: string
+ *                       example: "V"
+ *                     renfort:
+ *                       type: string
+ *                       example: "XL"
+ *                     stock:
+ *                       type: integer
+ *                       example: 100
+ *                     prix:
+ *                       type: number
+ *                       example: 120.99
+ *                     image:
+ *                       type: string
+ *                       example: "https://example.com/image.jpg"
  *       400:
- *         description: Données manquantes ou invalides
+ *         description: Paramètres manquants ou invalides
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tous les champs sont requis."
  *       500:
  *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erreur interne du serveur"
+ *       
  */
 router.post('/ajouter', ajouterProduit);
 
@@ -85,16 +142,16 @@ router.post('/ajouter', ajouterProduit);
  * /produits/modifier/{id}:
  *   put:
  *     summary: Modifier un produit existant
- *     description: Met à jour les informations d'un produit existant en fonction de son ID.
+ *     description: Cette route permet de modifier un produit existant dans la base de données.
  *     tags:
  *       - Produits
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID du produit à modifier
  *         schema:
  *           type: integer
- *         description: ID du produit à modifier
  *     requestBody:
  *       required: true
  *       content:
@@ -102,51 +159,110 @@ router.post('/ajouter', ajouterProduit);
  *           schema:
  *             type: object
  *             properties:
+ *               saison:
+ *                 type: string
+ *                 example: "été"
  *               marque:
  *                 type: string
- *                 example: Michelin
+ *                 example: "Michelin"
  *               modele:
  *                 type: string
- *                 example: Primacy 4
+ *                 example: "Primacy 5"
  *               Largeur_pneu:
- *                 type: integer
- *                 example: 205
+ *                 type: string
+ *                 example: "205"
  *               profil_pneu:
- *                 type: integer
- *                 example: 55
+ *                 type: string
+ *                 example: "55"
  *               type_pneu:
  *                 type: string
- *                 example: R
+ *                 example: "R"
  *               diametre:
- *                 type: integer
- *                 example: 16
+ *                 type: string
+ *                 example: "16"
  *               indice_charge:
- *                 type: integer
- *                 example: 91
+ *                 type: string
+ *                 example: "91"
  *               indice_vitesse:
  *                 type: string
- *                 example: H
+ *                 example: "V"
  *               renfort:
  *                 type: string
- *                 example: XL
+ *                 example: "XL"
  *               stock:
  *                 type: integer
- *                 example: 50
+ *                 example: 100
  *               prix:
  *                 type: number
- *                 format: float
- *                 example: 99.99
+ *                 example: 120.99
+ *               image:
+ *                 type: string
+ *                 example: "https://example.com/image.jpg"
  *     responses:
  *       200:
  *         description: Produit modifié avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Produit modifié avec succès"
+ *                 produit:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     saison:
+ *                       type: string
+ *                       example: "été"
+ *                     marque:
+ *                       type: string
+ *                       example: "Michelin"
+ *                     modele:
+ *                       type: string
+ *                       example: "Primacy 5"
+ *                     Largeur_pneu:
+ *                       type: string
+ *                       example: "205"
+ *                     profil_pneu:
+ *                       type: string
+ *                       example: "55"
+ *                     type_pneu:
+ *                       type: string
+ *                       example: "R"
+ *                     diametre:
+ *                       type: string
+ *                       example: "16"
+ *                     indice_charge:
+ *                       type: string
+ *                       example: "91"
+ *                     indice_vitesse:
+ *                       type: string
+ *                       example: "V"
+ *                     renfort:
+ *                       type: string
+ *                       example: "XL"
+ *                     stock:
+ *                       type: integer
+ *                       example: 100
+ *                     prix:
+ *                       type: number
+ *                       example: 120.99
+ *                     image:
+ *                       type: string
+ *                       example: "https://example.com/image.jpg"
  *       400:
- *         description: Données invalides ou manquantes
+ *         description: Paramètres manquants ou invalides
  *       404:
  *         description: Produit non trouvé
  *       500:
  *         description: Erreur interne du serveur
  */
-router.put('/modifier/:id', modifierProduit);
+router.put("/modifier/:id", modifierProduit);
+
 
 
 /**

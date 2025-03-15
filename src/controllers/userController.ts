@@ -5,19 +5,26 @@ import { User } from '../models/userModels';
 
 export async function register(req: Request, res: Response) {
     try {
-        const { nom, prenom, speudo, email, password } = req.body;
+        const { nom, prenom, speudo, email, password, role } = req.body;
 
         // Vérification des champs obligatoires
         if (!nom || !prenom || !speudo || !email || !password) {
             res.status(400).json({ message: "Veuillez remplir tous les champs requis." });
-            return 
+            return;
+        }
+
+        // Vérification si le rôle est valide
+        const validRoles = ["Admin", "Ouvrier", "Employé"];
+        if (role && !validRoles.includes(role)) {
+            res.status(400).json({ message: `Le rôle doit être l'un des suivants : ${validRoles.join(", ")}` });
+            return;
         }
 
         // Vérification de l'existence de l'utilisateur
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             res.status(400).json({ message: "Cet utilisateur existe déjà !" });
-            return 
+            return;
         }
 
         // Création de l'utilisateur
@@ -26,6 +33,7 @@ export async function register(req: Request, res: Response) {
             prenom,
             speudo,
             email,
+            role: role || "Employé", // Valeur par défaut si aucun rôle n'est fourni
             hashedpassword: await hashPassword(password), // Hash du mot de passe
         });
 
@@ -33,23 +41,23 @@ export async function register(req: Request, res: Response) {
         const { hashedpassword, ...userWithoutPassword } = newUser.toJSON();
 
         res.status(201).json(userWithoutPassword);
-        return 
-
     } catch (err: any) {
         console.error("Erreur lors de l'inscription :", err);
 
         if (err.name === "SequelizeValidationError") {
-            res.status(400).json({ message: "Données invalides", errors: err.errors.map((e: any) => e.message) });
-            return 
+            res.status(400).json({
+                message: "Données invalides",
+                errors: err.errors.map((e: any) => e.message),
+            });
+            return;
         }
 
         if (err.name === "SequelizeUniqueConstraintError") {
-           res.status(400).json({ message: "Cet email est déjà utilisé." });
-           return 
+            res.status(400).json({ message: "Cet email est déjà utilisé." });
+            return;
         }
 
-       res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
-       return 
+        res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
     }
 }
 
