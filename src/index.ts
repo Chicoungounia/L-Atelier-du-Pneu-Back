@@ -10,6 +10,7 @@ import clientRoutes from './routes/clientRoutes';
 import rendezVousRoutes from './routes/rendezVousRoutes';
 import { v2 as cloudinary } from 'cloudinary';
 import prestationRoutes from './routes/prestationRoutes';
+import factureRoutes from './routes/factureRoutes';
 
 
 //Création d'un serveur Express
@@ -36,6 +37,7 @@ app.use('/produits', produitRoutes)
 app.use('/clients', clientRoutes)
 app.use("/rendezvous", rendezVousRoutes);
 app.use("/prestation", prestationRoutes);
+app.use("/factures", factureRoutes);
 
 
 // Swagger route

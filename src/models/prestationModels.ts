@@ -47,6 +47,8 @@ Prestation.init(
     sequelize,
     tableName: "prestations",
     timestamps: true, // Active automatiquement createdAt et updatedAt
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 
