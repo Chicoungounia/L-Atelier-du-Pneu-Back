@@ -27,7 +27,7 @@ const router = express.Router();
  *               modele:
  *                 type: string
  *                 example: "Primacy 5"
- *               Largeur_pneu:
+ *               largeur_pneu:
  *                 type: string
  *                 example: "205"
  *               profil_pneu:
@@ -83,7 +83,7 @@ const router = express.Router();
  *                     modele:
  *                       type: string
  *                       example: "Primacy 5"
- *                     Largeur_pneu:
+ *                     largeur_pneu:
  *                       type: string
  *                       example: "205"
  *                     profil_pneu:
@@ -168,7 +168,7 @@ router.post('/ajouter', ajouterProduit);
  *               modele:
  *                 type: string
  *                 example: "Primacy 5"
- *               Largeur_pneu:
+ *               largeur_pneu:
  *                 type: string
  *                 example: "205"
  *               profil_pneu:
@@ -224,7 +224,7 @@ router.post('/ajouter', ajouterProduit);
  *                     modele:
  *                       type: string
  *                       example: "Primacy 5"
- *                     Largeur_pneu:
+ *                     largeur_pneu:
  *                       type: string
  *                       example: "205"
  *                     profil_pneu:

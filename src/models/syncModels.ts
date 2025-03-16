@@ -1,5 +1,6 @@
 import sequelize from "../config/database";
 import Client from "./clientModel";
+import Prestation from "./prestationModels";
 import Produit from "./produitModel";
 import RendezVous from "./rendezVousModel";
 const syncDatabase = async () => {
@@ -12,4 +13,4 @@ const syncDatabase = async () => {
     console.error("Erreur lors de la synchronisation :", error);
     }
    };
-   export { syncDatabase, Produit, Client, RendezVous };
+   export { syncDatabase, Produit, Client, RendezVous, Prestation };

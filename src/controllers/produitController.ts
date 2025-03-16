@@ -7,7 +7,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
       saison,
       marque,
       modele,
-      Largeur_pneu,
+      largeur_pneu,
       profil_pneu,
       type_pneu,
       diametre,
@@ -21,7 +21,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
 
     // Vérification des données requises
     if (
-      !saison || !marque || !modele || !Largeur_pneu || !profil_pneu || 
+      !saison || !marque || !modele || !largeur_pneu || !profil_pneu || 
       !type_pneu || !diametre || !indice_charge || !indice_vitesse || 
       !renfort || stock === undefined || prix === undefined || !image
     ) {
@@ -36,7 +36,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
       saison,
       marque,
       modele,
-      Largeur_pneu,
+      largeur_pneu,
       profil_pneu,
       type_pneu,
       diametre,
@@ -66,7 +66,7 @@ export const modifierProduit = async (req: Request, res: Response) => {
       saison,
       marque,
       modele,
-      Largeur_pneu,
+      largeur_pneu,
       profil_pneu,
       type_pneu,
       diametre,
@@ -98,7 +98,7 @@ export const modifierProduit = async (req: Request, res: Response) => {
       saison: saison || produit.saison, // Si saison est fourni, mettre à jour, sinon garder l'ancienne valeur
       marque: marque || produit.marque,
       modele: modele || produit.modele,
-      Largeur_pneu: Largeur_pneu || produit.Largeur_pneu,
+      largeur_pneu: largeur_pneu || produit.largeur_pneu,
       profil_pneu: profil_pneu || produit.profil_pneu,
       type_pneu: type_pneu || produit.type_pneu,
       diametre: diametre || produit.diametre,

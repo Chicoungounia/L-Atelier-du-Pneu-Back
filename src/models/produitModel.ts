@@ -1,21 +1,47 @@
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../config/database";
 
-class Produit extends Model {
+// Définition des attributs sans `id`, `createdAt`, `updatedAt` (Sequelize les gère)
+interface ProduitAttributes {
+  id?: number;
+  saison: "été" | "hiver" | "4 saisons";
+  marque: "Michelin" | "Bridgestone" | "Hankook" | "Goodyear";
+  modele: string;
+  largeur_pneu: number;
+  profil_pneu: number;
+  type_pneu: "R" | "D";
+  diametre: number;
+  indice_charge: number;
+  indice_vitesse: "H" | "T" | "V" | "W" | "Y";
+  renfort: "XL" | "C" | "LT" | "RF" | "RS";
+  stock: number;
+  prix: number;
+  image: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+
+
+
+
+export class Produit extends Model<ProduitAttributes> implements ProduitAttributes {
   public id!: number;
   public saison!: "été" | "hiver" | "4 saisons";
   public marque!: "Michelin" | "Bridgestone" | "Hankook" | "Goodyear";
   public modele!: string;
-  public Largeur_pneu!: number;
+  public largeur_pneu!: number;
   public profil_pneu!: number;
   public type_pneu!: "R" | "D";
   public diametre!: number;
   public indice_charge!: number;
-  public indice_vitesse!: "H" | "T" | "V";
+  public indice_vitesse!: "H" | "T" | "V" | "W" | "Y";
   public renfort!: "XL" | "C" | "LT" | "RF" | "RS";
   public stock!: number;
   public prix!: number;
   public image!: string | null;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Produit.init(
@@ -37,7 +63,7 @@ Produit.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    Largeur_pneu: {
+    largeur_pneu: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -58,7 +84,7 @@ Produit.init(
       allowNull: false,
     },
     indice_vitesse: {
-      type: DataTypes.ENUM("H", "T", "V"),
+      type: DataTypes.ENUM("H", "T", "V", "W", "Y"),
       allowNull: false,
     },
     renfort: {
@@ -75,13 +101,15 @@ Produit.init(
     },
     image: {
       type: DataTypes.STRING,
-      allowNull: true, // Permet aux produits de ne pas forcément avoir une image
+      allowNull: true,
     },
   },
   {
     sequelize,
     tableName: "produits",
-    timestamps: true,
+    timestamps: true, // Active automatiquement createdAt et updatedAt
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 

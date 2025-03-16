@@ -2,7 +2,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 
 const swaggerOptions = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
       title: "API L'Atelier du Pneu",
       version: "1.0.0",
@@ -15,6 +15,17 @@ const swaggerOptions = {
     ],
     components: {
       schemas: {
+        Prestation: {
+          type: "object",
+          properties: {
+            id: { type: "integer", example: 1, description: "ID unique de la prestation" },
+            travail: { type: "string", example: "Montage de pneus", description: "Type de prestation" },
+            description: { type: "string", example: "Montage de quatre pneus neufs sur jantes.", description: "Description détaillée de la prestation" },
+            prix: { type: "number", format: "float", example: 50.00, description: "Prix de la prestation" },
+            createdAt: { type: "string", format: "date-time", example: "2025-03-16T10:20:30Z", description: "Date et heure de création" },
+            updatedAt: { type: "string", format: "date-time", example: "2025-03-16T10:20:30Z", description: "Date et heure de la dernière mise à jour" },
+          },
+        },
         RendezVous: {
           type: "object",
           properties: {
