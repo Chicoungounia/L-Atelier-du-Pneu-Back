@@ -10,7 +10,7 @@ interface RendezVousAttributes {
   pont: 1 | 2 | 3; 
   dateDebut: Date;
   dateFin: Date;
-  status: "réserver" | "reporter" | "annuler";
+  status: "réserver" | "annuler";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -78,6 +78,9 @@ RendezVous.init(
     sequelize,
     tableName: "rendezvous",
     timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+    
   }
 );
 

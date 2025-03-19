@@ -4,7 +4,7 @@ import sequelize from "../config/database";
 // Définition des attributs sans `id`, `createdAt`, `updatedAt` (Sequelize les gère)
 interface ProduitAttributes {
   id?: number;
-  saison: "été" | "hiver" | "4 saisons";
+  saison: "été" | "hiver" | "4_saisons";
   marque: "Michelin" | "Bridgestone" | "Hankook" | "Goodyear";
   modele: string;
   largeur_pneu: number;
@@ -27,7 +27,7 @@ interface ProduitAttributes {
 
 export class Produit extends Model<ProduitAttributes> implements ProduitAttributes {
   public id!: number;
-  public saison!: "été" | "hiver" | "4 saisons";
+  public saison!: "été" | "hiver" | "4_saisons";
   public marque!: "Michelin" | "Bridgestone" | "Hankook" | "Goodyear";
   public modele!: string;
   public largeur_pneu!: number;
@@ -52,7 +52,7 @@ Produit.init(
       primaryKey: true,
     },
     saison: {
-      type: DataTypes.ENUM("été", "hiver", "4 saisons"),
+      type: DataTypes.ENUM("été", "hiver", "4_saisons"),
       allowNull: false,
     },
     marque: {

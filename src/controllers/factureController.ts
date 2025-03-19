@@ -1,239 +1,250 @@
-// import { Request, Response } from "express";
-// import sequelize from "../config/database";
-// import Facture from "../models/factureModels";
-// import FactureProduits from "../models/factureProduitModels";
-// import FacturePrestations from "../models/facturePrestationModels";
-
-// class FactureController {
-//   // ✅ Ajouter une facture avec produits et prestations associées
-//   static async ajouterFacture(req: Request, res: Response) {
-//     const t = await sequelize.transaction();
-
-//     try {
-//       const { type, userId, clientId, produits, prestations } = req.body;
-
-//       // Vérifier que les données obligatoires sont fournies
-//       if (!type || !userId || !clientId || !produits || !prestations) {
-//         res.status(400).json({ message: "Tous les champs sont requis." });
-//         return;
-//       }
-
-//       // Création de la facture
-//       const facture = await Facture.create(
-//         {
-//           type,
-//           userId,
-//           clientId,
-//           totalhtva: 0,
-//           totalremise: 0,
-//           tva: 0,
-//           total: 0,
-//         },
-//         { transaction: t }
-//       );
-
-//       let totalHTVA = 0;
-//       let totalRemise = 0;
-//       let totalTVA = 0;
-//       let totalTTC = 0;
-
-//       // ✅ Ajout des produits à la facture
-//       for (const produit of produits) {
-//         const { produitId, quantite, prix_htva, remise, tva } = produit;
-//         const total_ttc = (prix_htva - remise) * (1 + tva / 100) * quantite;
-
-//         await FactureProduits.create(
-//           {
-//             factureId: facture.id,
-//             produitId,
-//             quantite,
-//             prix_htva,
-//             remise,
-//             tva,
-//             total_ttc,
-//           },
-//           { transaction: t }
-//         );
-
-//         totalHTVA += prix_htva * quantite;
-//         totalRemise += remise * quantite;
-//         totalTVA += (prix_htva - remise) * (tva / 100) * quantite;
-//         totalTTC += total_ttc;
-//       }
-
-//       // ✅ Ajout des prestations à la facture
-//       for (const prestation of prestations) {
-//         const { prestationId, prix_htva, remise, tva } = prestation;
-//         const total_ttc = (prix_htva - remise) * (1 + tva / 100);
-
-//         await FacturePrestations.create(
-//           {
-//             factureId: facture.id,
-//             prestationId,
-//             prix_htva,
-//             remise,
-//             tva,
-//             total_ttc,
-//           },
-//           { transaction: t }
-//         );
-
-//         totalHTVA += prix_htva;
-//         totalRemise += remise;
-//         totalTVA += (prix_htva - remise) * (tva / 100);
-//         totalTTC += total_ttc;
-//       }
-
-//       // ✅ Mise à jour du total de la facture
-//       await facture.update(
-//         {
-//           totalhtva: totalHTVA,
-//           totalremise: totalRemise,
-//           tva: totalTVA,
-//           total: totalTTC,
-//         },
-//         { transaction: t }
-//       );
-
-//       await t.commit();
-//       res.status(201).json({ message: "Facture créée avec succès", facture });
-//       return;
-//     } catch (error) {
-//       await t.rollback();
-//       console.error(error);
-//       res.status(500).json({ message: "Erreur lors de la création de la facture" });
-//       return;
-//     }
-//   }
-// }
-
-// export default FactureController;
-
-
 import { Request, Response } from "express";
+import { Transaction } from "sequelize";
 import sequelize from "../config/database";
+import Produit from "../models/produitModel";
+import Prestation from "../models/prestationModels";
 import Facture from "../models/factureModels";
-import FactureProduits from "../models/factureProduitModels";
-import FacturePrestations from "../models/facturePrestationModels";
 
-class FactureController {
-  // ✅ Ajouter une facture avec produits et prestations associées
-  static async ajouterFacture(req: Request, res: Response) {
-    const t = await sequelize.transaction();
+export const ajouterFacture = async (req: Request, res: Response) => {
+  const {
+    type,
+    userId,
+    clientId,
+    produitId,
+    prestationId,
+    prix_htva_produit,
+    quantite_produit,
+    remise_produit,
+    tva_produit,
+    total_ttc_produit,
+    prix_htva_prestation,
+    quantite_prestation,
+    remise_prestation,
+    tva_prestation,
+    total_ttc_prestation,
+    total_htva,
+    total_remise,
+    total_tva,
+    total,
+  } = req.body;
 
-    try {
-      const { type, userId, clientId, produits, prestations } = req.body;
+  const transaction: Transaction = await sequelize.transaction();
 
-      // Vérification des données requises
-      if (!type || !userId || !clientId) {
-        res.status(400).json({ message: "Les champs type, userId et clientId sont requis." });
+  try {
+    // Vérification de l'existence du produit et du stock si c'est une Facture
+    if (type === "Facture") {
+      const produit = await Produit.findByPk(produitId, { transaction });
+      if (!produit) {
+        await transaction.rollback();
+        res.status(404).json({ message: "Produit introuvable" });
         return;
       }
 
-      // Création de la facture
-      const facture = await Facture.create(
-        { type, userId, clientId, totalhtva: 0, totalremise: 0, tva: 0, total: 0 },
-        { transaction: t }
-      );
-
-      let totalHTVA = 0;
-      let totalRemise = 0;
-      let totalTVA = 0;
-      let totalTTC = 0;
-
-      // ✅ Ajout des produits à la facture
-      if (produits && produits.length > 0) {
-        for (const produit of produits) {
-          const { produitId, quantite, prix_htva, remise, remiseType, tva = 20 } = produit;
-
-          if (!quantite || !prix_htva) {
-            res.status(400).json({ message: "Quantité et prix HTVA sont requis pour un produit." });
-            return;
-          }
-
-          // Calcul de la remise en fonction du type (pourcentage ou montant)
-          const remiseFinale =
-            remiseType === "pourcentage" ? (prix_htva * remise) / 100 : remise;
-
-          const total_ttc = (prix_htva - remiseFinale) * (1 + tva / 100) * quantite;
-
-          await FactureProduits.create(
-            {
-              factureId: facture.id,
-              produitId: produitId || null, // Permet d'avoir null
-              quantite,
-              prix_htva,
-              remise: parseFloat(remiseFinale.toFixed(2)), // Arrondi à 2 décimales
-              tva,
-              total_ttc,
-            },
-            { transaction: t }
-          );
-
-          totalHTVA += prix_htva * quantite;
-          totalRemise += remiseFinale * quantite;
-          totalTVA += (prix_htva - remiseFinale) * (tva / 100) * quantite;
-          totalTTC += total_ttc;
-        }
+      if (produit.stock < quantite_produit) {
+        await transaction.rollback();
+        res.status(400).json({ message: "Stock insuffisant pour ce produit" });
+        return;
       }
 
-      // ✅ Ajout des prestations à la facture
-      if (prestations && prestations.length > 0) {
-        for (const prestation of prestations) {
-          const { prestationId, quantite, prix_htva, remise, remiseType, tva = 20 } = prestation;
+      // Mise à jour du stock du produit
+      produit.stock -= quantite_produit;
+      await produit.save({ transaction });
+    }
 
-          if (!quantite || !prix_htva) {
-            res.status(400).json({ message: "Quantité et prix HTVA sont requis pour une prestation." });
-            return;
-          }
-
-          // Calcul de la remise en fonction du type (pourcentage ou montant)
-          const remiseFinale =
-            remiseType === "pourcentage" ? (prix_htva * remise) / 100 : remise;
-
-          const total_ttc = (prix_htva - remiseFinale) * (1 + tva / 100) * quantite;
-
-          await FacturePrestations.create(
-            {
-              factureId: facture.id,
-              prestationId: prestationId || null, // Permet d'avoir null
-              quantite,
-              prix_htva,
-              remise: parseFloat(remiseFinale.toFixed(2)), // Arrondi à 2 décimales
-              tva,
-              total_ttc,
-            },
-            { transaction: t }
-          );
-
-          totalHTVA += prix_htva * quantite;
-          totalRemise += remiseFinale * quantite;
-          totalTVA += (prix_htva - remiseFinale) * (tva / 100) * quantite;
-          totalTTC += total_ttc;
-        }
-      }
-
-      // ✅ Mise à jour du total de la facture
-      await facture.update(
-        {
-          totalhtva: totalHTVA,
-          totalremise: parseFloat(totalRemise.toFixed(2)), // Arrondi à 2 décimales
-          tva: totalTVA,
-          total: totalTTC,
-        },
-        { transaction: t }
-      );
-
-      await t.commit();
-      res.status(201).json({ message: "Facture créée avec succès", facture });
-      return;
-    } catch (error) {
-      await t.rollback();
-      console.error(error);
-      res.status(500).json({ message: "Erreur lors de la création de la facture" });
+    // Vérification de l'existence de la prestation
+    const prestation = await Prestation.findByPk(prestationId, { transaction });
+    if (!prestation) {
+      await transaction.rollback();
+      res.status(404).json({ message: "Prestation introuvable" });
       return;
     }
-  }
-}
 
-export default FactureController;
+    // Création de la facture
+    const nouvelleFacture = await Facture.create(
+      {
+        type,
+        userId,
+        clientId,
+        produitId,
+        prestationId,
+        prix_htva_produit,
+        quantite_produit,
+        remise_produit,
+        tva_produit,
+        total_ttc_produit,
+        prix_htva_prestation,
+        quantite_prestation,
+        remise_prestation,
+        tva_prestation,
+        total_ttc_prestation,
+        total_htva,
+        total_remise,
+        total_tva,
+        total,
+      },
+      { transaction }
+    );
+
+    // Valider la transaction
+    await transaction.commit();
+
+    res.status(201).json({
+      message: "Facture ajoutée avec succès",
+      facture: nouvelleFacture,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error(error);
+    res.status(500).json({ message: "Erreur lors de la création de la facture", error });
+  }
+};
+
+export const modifierFacture = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const {
+    type,
+    userId,
+    clientId,
+    produitId,
+    prestationId,
+    prix_htva_produit,
+    quantite_produit,
+    remise_produit,
+    tva_produit,
+    total_ttc_produit,
+    prix_htva_prestation,
+    quantite_prestation,
+    remise_prestation,
+    tva_prestation,
+    total_ttc_prestation,
+    total_htva,
+    total_remise,
+    total_tva,
+    total,
+  } = req.body;
+
+  const transaction: Transaction = await sequelize.transaction();
+
+  try {
+    // Vérifier si la facture existe
+    const factureExistante = await Facture.findByPk(id, { transaction });
+    if (!factureExistante) {
+      await transaction.rollback();
+      res.status(404).json({ message: "Facture introuvable" });
+      return;
+    }
+
+    // Vérification de l'existence du produit et gestion du stock si c'est une Facture
+    if (type === "Facture") {
+      const produit = await Produit.findByPk(produitId, { transaction });
+      if (!produit) {
+        await transaction.rollback();
+        res.status(404).json({ message: "Produit introuvable" });
+        return;
+      }
+
+      // Réajuster le stock si la quantité du produit a changé
+      if (factureExistante.produitId !== produitId || factureExistante.quantite_produit !== quantite_produit) {
+        // Rétablir l'ancien stock
+        const ancienProduit = await Produit.findByPk(factureExistante.produitId, { transaction });
+        if (ancienProduit) {
+          ancienProduit.stock += factureExistante.quantite_produit;
+          await ancienProduit.save({ transaction });
+        }
+
+        // Vérifier le stock du nouveau produit
+        if (produit.stock < quantite_produit) {
+          await transaction.rollback();
+          res.status(400).json({ message: "Stock insuffisant pour ce produit" });
+          return;
+        }
+
+        // Mettre à jour le stock du nouveau produit
+        produit.stock -= quantite_produit;
+        await produit.save({ transaction });
+      }
+    }
+
+    // Vérification de l'existence de la prestation
+    const prestation = await Prestation.findByPk(prestationId, { transaction });
+    if (!prestation) {
+      await transaction.rollback();
+      res.status(404).json({ message: "Prestation introuvable" });
+      return;
+    }
+
+    // Mettre à jour la facture
+    await factureExistante.update(
+      {
+        type,
+        userId,
+        clientId,
+        produitId,
+        prestationId,
+        prix_htva_produit,
+        quantite_produit,
+        remise_produit,
+        tva_produit,
+        total_ttc_produit,
+        prix_htva_prestation,
+        quantite_prestation,
+        remise_prestation,
+        tva_prestation,
+        total_ttc_prestation,
+        total_htva,
+        total_remise,
+        total_tva,
+        total,
+      },
+      { transaction }
+    );
+
+    // Valider la transaction
+    await transaction.commit();
+
+    res.status(200).json({
+      message: "Facture mise à jour avec succès",
+      facture: factureExistante,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error(error);
+    res.status(500).json({ message: "Erreur lors de la mise à jour de la facture", error });
+  }
+};
+
+export const supprimerFacture = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const transaction: Transaction = await sequelize.transaction();
+
+  try {
+    // Vérifier si la facture existe
+    const factureExistante = await Facture.findByPk(id, { transaction });
+    if (!factureExistante) {
+      await transaction.rollback();
+      res.status(404).json({ message: "Facture introuvable" });
+      return;
+    }
+
+    // Restaurer le stock du produit si c'est une Facture
+    if (factureExistante.type === "Facture") {
+      const produit = await Produit.findByPk(factureExistante.produitId, { transaction });
+      if (produit) {
+        produit.stock += factureExistante.quantite_produit;
+        await produit.save({ transaction });
+      }
+    }
+
+    // Supprimer la facture
+    await factureExistante.destroy({ transaction });
+
+    // Valider la transaction
+    await transaction.commit();
+
+    res.status(200).json({ message: "Facture supprimée avec succès" });
+  } catch (error) {
+    await transaction.rollback();
+    console.error(error);
+    res.status(500).json({ message: "Erreur lors de la suppression de la facture", error });
+  }
+};

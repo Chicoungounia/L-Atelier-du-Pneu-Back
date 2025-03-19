@@ -70,5 +70,7 @@ User.init(
         sequelize,
         tableName: "users",
         timestamps: true, // Assure la gestion automatique de createdAt & updatedAt
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 );

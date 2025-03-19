@@ -64,6 +64,8 @@ Client.init(
     sequelize,
     tableName: "clients",
     timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 
