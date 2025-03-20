@@ -1,14 +1,16 @@
 import { Router } from "express";
-import { ajouterFacture, modifierFacture, supprimerFacture } from "../controllers/factureController";
+import { ajouterFacture, convertirTypeFacture, modifierFacture, recupererToutesLesFactures, recupererUneFacture, supprimerFacture } from "../controllers/factureController";
 
 const router = Router();
 
 /**
  * @swagger
+/**
+ * @swagger
  * /factures/ajouter:
  *   post:
- *     summary: Créer une nouvelle facture ou un devis
- *     description: Cette route permet d'ajouter une facture ou un devis pour un client avec les produits et prestations associées.
+ *     summary: Créer une nouvelle facture
+ *     description: Ajoute une nouvelle facture avec les informations fournies.
  *     tags:
  *       - Factures
  *     requestBody:
@@ -17,100 +19,44 @@ const router = Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - type
- *               - userId
- *               - clientId
- *               - produitId
- *               - prestationId
- *               - prix_htva_produit
- *               - quantite_produit
- *               - remise_produit
- *               - tva_produit
- *               - total_ttc_produit
- *               - prix_htva_prestation
- *               - quantite_prestation
- *               - remise_prestation
- *               - tva_prestation
- *               - total_ttc_prestation
- *               - total_htva
- *               - total_remise
- *               - total_tva
- *               - total
  *             properties:
  *               type:
  *                 type: string
- *                 enum: ["Devis", "Facture"]
- *                 description: Type du document (Facture ou Devis).
+ *                 enum: ["Facture", "Devis"]
+ *                 description: Type de facture (Facture ou Devis).
  *               userId:
  *                 type: integer
  *                 description: ID de l'utilisateur qui crée la facture.
  *               clientId:
  *                 type: integer
- *                 description: ID du client concerné par la facture.
+ *                 description: ID du client associé à la facture.
  *               produitId:
  *                 type: integer
- *                 description: ID du produit facturé.
+ *                 nullable: true
+ *                 description: ID du produit acheté (optionnel).
  *               prestationId:
  *                 type: integer
- *                 description: ID de la prestation facturée.
- *               prix_htva_produit:
- *                 type: number
- *                 format: float
- *                 description: Prix hors taxes du produit.
+ *                 nullable: true
+ *                 description: ID de la prestation effectuée (optionnel).
  *               quantite_produit:
  *                 type: integer
- *                 description: Quantité du produit facturée.
+ *                 default: 0
+ *                 description: Quantité de produit achetée.
  *               remise_produit:
  *                 type: number
- *                 format: float
- *                 description: Remise appliquée sur le produit.
- *               tva_produit:
- *                 type: number
- *                 format: float
- *                 description: TVA appliquée sur le produit.
- *               total_ttc_produit:
- *                 type: number
- *                 format: float
- *                 description: Total TTC du produit.
- *               prix_htva_prestation:
- *                 type: number
- *                 format: float
- *                 description: Prix hors taxes de la prestation.
+ *                 default: 0
+ *                 description: Remise appliquée sur le produit (en pourcentage).
  *               quantite_prestation:
  *                 type: integer
- *                 description: Quantité de la prestation facturée.
+ *                 default: 0
+ *                 description: Quantité de prestation effectuée.
  *               remise_prestation:
  *                 type: number
- *                 format: float
- *                 description: Remise appliquée sur la prestation.
- *               tva_prestation:
- *                 type: number
- *                 format: float
- *                 description: TVA appliquée sur la prestation.
- *               total_ttc_prestation:
- *                 type: number
- *                 format: float
- *                 description: Total TTC de la prestation.
- *               total_htva:
- *                 type: number
- *                 format: float
- *                 description: Total hors taxes global.
- *               total_remise:
- *                 type: number
- *                 format: float
- *                 description: Remise totale appliquée.
- *               total_tva:
- *                 type: number
- *                 format: float
- *                 description: TVA totale appliquée.
- *               total:
- *                 type: number
- *                 format: float
- *                 description: Montant total TTC de la facture.
+ *                 default: 0
+ *                 description: Remise appliquée sur la prestation (en pourcentage).
  *     responses:
  *       201:
- *         description: Facture créée avec succès.
+ *         description: Facture ajoutée avec succès.
  *         content:
  *           application/json:
  *             schema:
@@ -118,154 +64,67 @@ const router = Router();
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Facture ajoutée avec succès
  *                 facture:
  *                   type: object
- *                   description: Les détails de la facture créée.
  *       400:
  *         description: Stock insuffisant ou données invalides.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Stock insuffisant pour ce produit
  *       404:
  *         description: Produit ou prestation introuvable.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Produit introuvable
  *       500:
- *         description: Erreur interne du serveur lors de la création de la facture.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Erreur lors de la création de la facture
+ *         description: Erreur serveur lors de la création de la facture.
  */
 router.post("/ajouter", ajouterFacture);
+
+
 /**
  * @swagger
  * /factures/modifier/{id}:
  *   put:
  *     summary: Modifier une facture existante
- *     description: Met à jour une facture en modifiant ses informations et ajuste le stock du produit si nécessaire.
+ *     description: Met à jour une facture par son ID. Gère les mises à jour de produits et prestations, ainsi que la gestion du stock si nécessaire.
  *     tags:
  *       - Factures
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID de la facture à modifier
  *         schema:
- *           type: integer
+ *           type: string
+ *         description: ID de la facture à modifier
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - type
- *               - userId
- *               - clientId
- *               - produitId
- *               - prestationId
- *               - prix_htva_produit
- *               - quantite_produit
- *               - remise_produit
- *               - tva_produit
- *               - total_ttc_produit
- *               - prix_htva_prestation
- *               - quantite_prestation
- *               - remise_prestation
- *               - tva_prestation
- *               - total_ttc_prestation
- *               - total_htva
- *               - total_remise
- *               - total_tva
- *               - total
  *             properties:
  *               type:
  *                 type: string
  *                 enum: [Devis, Facture]
- *                 description: Type de facture (Devis ou Facture)
  *               userId:
  *                 type: integer
- *                 description: ID de l'utilisateur associé
  *               clientId:
  *                 type: integer
- *                 description: ID du client associé
  *               produitId:
  *                 type: integer
- *                 description: ID du produit associé
+ *                 nullable: true
  *               prestationId:
  *                 type: integer
- *                 description: ID de la prestation associée
- *               prix_htva_produit:
- *                 type: number
- *                 format: float
- *                 description: Prix HTVA du produit
+ *                 nullable: true
  *               quantite_produit:
  *                 type: integer
- *                 description: Quantité du produit
+ *                 default: 0
  *               remise_produit:
  *                 type: number
  *                 format: float
- *                 description: Remise sur le produit
- *               tva_produit:
- *                 type: number
- *                 format: float
- *                 description: TVA du produit
- *               total_ttc_produit:
- *                 type: number
- *                 format: float
- *                 description: Total TTC du produit
- *               prix_htva_prestation:
- *                 type: number
- *                 format: float
- *                 description: Prix HTVA de la prestation
+ *                 default: 0
  *               quantite_prestation:
  *                 type: integer
- *                 description: Quantité de la prestation
+ *                 default: 0
  *               remise_prestation:
  *                 type: number
  *                 format: float
- *                 description: Remise sur la prestation
- *               tva_prestation:
- *                 type: number
- *                 format: float
- *                 description: TVA de la prestation
- *               total_ttc_prestation:
- *                 type: number
- *                 format: float
- *                 description: Total TTC de la prestation
- *               total_htva:
- *                 type: number
- *                 format: float
- *                 description: Total HTVA
- *               total_remise:
- *                 type: number
- *                 format: float
- *                 description: Total des remises
- *               total_tva:
- *                 type: number
- *                 format: float
- *                 description: Total de la TVA
- *               total:
- *                 type: number
- *                 format: float
- *                 description: Montant total de la facture
+ *                 default: 0
  *     responses:
  *       200:
  *         description: Facture mise à jour avec succès
@@ -276,32 +135,75 @@ router.post("/ajouter", ajouterFacture);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Facture mise à jour avec succès
  *                 facture:
- *                   $ref: '#/components/schemas/Facture'
+ *                   $ref: "#/components/schemas/Facture"
  *       400:
- *         description: Stock insuffisant ou requête invalide
+ *         description: "Erreur de validation (ex: stock insuffisant)"
  *       404:
- *         description: Facture ou produit/prestation introuvable
+ *         description: Facture, produit ou prestation introuvable
  *       500:
  *         description: Erreur serveur lors de la mise à jour
  */
+
+
 router.put("/modifier/:id", modifierFacture);
+
 /**
  * @swagger
- * /factures/supprimer/{id}:
- *   delete:
- *     summary: Supprimer une facture
- *     description: Supprime une facture et remet à jour le stock du produit si nécessaire.
+ * /factures/convertir/{id}:
+ *   put:
+ *     summary: Convertit un devis en facture
+ *     description: Cette route permet de convertir un devis en facture en recalculant les prix et en mettant à jour le stock des produits si nécessaire.
  *     tags:
  *       - Factures
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID de la facture à supprimer
  *         schema:
  *           type: integer
+ *         description: ID du devis à convertir en facture
+ *     responses:
+ *       200:
+ *         description: Facture convertie avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Facture convertie avec succès
+ *                 facture:
+ *                   $ref: '#/components/schemas/Facture'
+ *       400:
+ *         description: Erreur de validation (stock insuffisant, type incorrect, etc.)
+ *       404:
+ *         description: Facture ou produit introuvable
+ *       500:
+ *         description: Erreur serveur lors de la conversion
+ */
+
+
+router.put("/convertir/:id/", convertirTypeFacture);
+
+
+
+/**
+ * @swagger
+ * /factures/supprimer/{id}:
+ *   delete:
+ *     summary: Supprimer une facture existante
+ *     description: Supprime une facture par son ID. Si c'est une facture et qu'un produit est lié, le stock du produit est restauré.
+ *     tags:
+ *       - Factures
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la facture à supprimer
  *     responses:
  *       200:
  *         description: Facture supprimée avec succès
@@ -312,15 +214,107 @@ router.put("/modifier/:id", modifierFacture);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Facture supprimée avec succès
  *       404:
  *         description: Facture introuvable
  *       500:
  *         description: Erreur serveur lors de la suppression
  */
-router.delete("/supprimer/:id", supprimerFacture); // Supprimer une facture
-// router.get("/", FactureController.getAllFactures); // Récupérer toutes les factures
-// router.get("/:id", FactureController.getFactureById); // Récupérer une facture par ID
+router.delete("/supprimer/:id", supprimerFacture); 
+
+/**
+ * @swagger
+ * /factures/recuperer/toute:
+ *   get:
+ *     summary: Récupérer toutes les factures
+ *     description: Retourne la liste complète des factures enregistrées dans la base de données.
+ *     tags:
+ *       - Factures
+ *     responses:
+ *       200:
+ *         description: Liste des factures récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Liste des factures récupérée avec succès
+ *                 factures:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Facture'
+ *       500:
+ *         description: Erreur lors de la récupération des factures
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Erreur lors de la récupération des factures
+ *                 error:
+ *                   type: object
+ */
+
+router.get("/recuperer/toute", recupererToutesLesFactures);
+
+/**
+ * @swagger
+ * /factures/recuperer/{id}:
+ *   get:
+ *     summary: Récupérer une facture par ID
+ *     description: Retourne une facture spécifique en fonction de l'ID fourni.
+ *     tags:
+ *       - Factures
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID de la facture à récupérer
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Facture récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Facture récupérée avec succès
+ *                 facture:
+ *                   $ref: '#/components/schemas/Facture'
+ *       404:
+ *         description: Facture introuvable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Facture introuvable
+ *       500:
+ *         description: Erreur lors de la récupération de la facture
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Erreur lors de la récupération de la facture
+ *                 error:
+ *                   type: object
+ */
+
+router.get("/recuperer/:id", recupererUneFacture);
+
+
 
 
 export default router;

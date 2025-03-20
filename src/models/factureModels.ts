@@ -11,20 +11,22 @@ interface FactureAttributes {
   type: "Devis" | "Facture";
   userId: number;
   clientId: number;
-  produitId: number;
-  prestationId: number;
-  prix_htva_produit: number;
-  quantite_produit: number;
-  remise_produit: number;
-  tva_produit: number;
-  total_ttc_produit: number;
-  prix_htva_prestation: number;
-  quantite_prestation: number;
-  remise_prestation: number;
-  tva_prestation: number;
-  total_ttc_prestation: number;
+  produitId?: number | null;
+  prestationId?: number | null;
+  prix_htva_produit?: number | null;
+  quantite_produit?: number | null;
+  remise_produit?: number | null;
+  total_htva_produit?: number | null;
+  tva_produit?: number | null;
+  total_ttc_produit?: number | null;
+  prix_htva_prestation?: number | null;
+  quantite_prestation?: number | null;
+  remise_prestation?: number | null;
+  total_htva_prestation?: number | null;
+  tva_prestation?: number | null;
+  total_ttc_prestation?: number | null;
   total_htva: number;
-  total_remise: number;
+  total_remise?: number | null;
   total_tva: number;
   total: number;
   createdAt?: Date;
@@ -35,28 +37,27 @@ interface FactureAttributes {
 interface FactureCreationAttributes extends Optional<FactureAttributes, "id"> {}
 
 // Modèle de Facture
-class Facture
-  extends Model<FactureAttributes, FactureCreationAttributes>
-  implements FactureAttributes
-{
+class Facture extends Model<FactureAttributes, FactureCreationAttributes> implements FactureAttributes {
   public id!: number;
   public type!: "Devis" | "Facture";
   public userId!: number;
   public clientId!: number;
-  public produitId!: number;
-  public prestationId!: number;
-  public prix_htva_produit!: number;
-  public quantite_produit!: number;
-  public remise_produit!: number;
-  public tva_produit!: number;
-  public total_ttc_produit!: number;
-  public prix_htva_prestation!: number;
-  public quantite_prestation!: number;
-  public remise_prestation!: number;
-  public tva_prestation!: number;
-  public total_ttc_prestation!: number;
+  public produitId!: number | null;
+  public prestationId!: number | null;
+  public prix_htva_produit!: number | null;
+  public quantite_produit!: number | null;
+  public remise_produit!: number | null;
+  public total_htva_produit!: number | null;
+  public tva_produit!: number | null;
+  public total_ttc_produit!: number | null;
+  public prix_htva_prestation!: number | null;
+  public quantite_prestation!: number | null;
+  public remise_prestation!: number | null;
+  public total_htva_prestation!: number | null;
+  public tva_prestation!: number | null;
+  public total_ttc_prestation!: number | null;
   public total_htva!: number;
-  public total_remise!: number;
+  public total_remise!: number | null;
   public total_tva!: number;
   public total!: number;
   public readonly createdAt!: Date;
@@ -95,7 +96,7 @@ Facture.init(
     },
     produitId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: Produit,
         key: "id",
@@ -104,7 +105,7 @@ Facture.init(
     },
     prestationId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: Prestation,
         key: "id",
@@ -113,52 +114,62 @@ Facture.init(
     },
     prix_htva_produit: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     quantite_produit: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
+      allowNull: true,
+      defaultValue: 0,
     },
     remise_produit: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
+      defaultValue: 0,
+    },
+    total_htva_produit: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
       defaultValue: 0,
     },
     tva_produit: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     total_ttc_produit: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     prix_htva_prestation: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     quantite_prestation: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
+      allowNull: true,
+      defaultValue: 0,
     },
     remise_prestation: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
+      defaultValue: 0,
+    },
+    total_htva_prestation: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
       defaultValue: 0,
     },
     tva_prestation: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     total_ttc_prestation: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     total_htva: {
@@ -168,7 +179,7 @@ Facture.init(
     },
     total_remise: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     total_tva: {
@@ -191,21 +202,9 @@ Facture.init(
   }
 );
 
-// Définition des associations
 Facture.belongsTo(User, { foreignKey: "userId" });
 Facture.belongsTo(Client, { foreignKey: "clientId" });
 Facture.belongsTo(Produit, { foreignKey: "produitId" });
 Facture.belongsTo(Prestation, { foreignKey: "prestationId" });
-
-// Mise à jour du stock après validation d'une facture
-Facture.afterCreate(async (facture, options) => {
-  if (facture.type === "Facture") {
-    const produit = await Produit.findByPk(facture.produitId);
-    if (produit) {
-      produit.stock -= facture.quantite_produit;
-      await produit.save({ transaction: options.transaction });
-    }
-  }
-});
 
 export default Facture;
