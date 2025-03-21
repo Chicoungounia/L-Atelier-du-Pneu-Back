@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
 
 // Définition des attributs d'un utilisateur
@@ -10,6 +10,7 @@ interface UserAttributes {
     email: string;
     role?: 'Admin' | 'Ouvrier' | 'Employé';
     hashedpassword: string;
+    status?: 'Actif' | 'Inactif'; // Ajout du statut actif/inactif
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -22,6 +23,7 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     public email!: string;
     public role!: 'Admin' | 'Ouvrier' | 'Employé';
     public hashedpassword!: string;
+    public status!: 'Actif' | 'Inactif';
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -41,7 +43,7 @@ User.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        speudo: { // Correction de "speudo"
+        speudo: {
             type: DataTypes.STRING,
             allowNull: false,
         },
@@ -56,20 +58,28 @@ User.init(
         role: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: 'Employé', // Correction du défaut pour correspondre aux valeurs valides
+            defaultValue: 'Employé',
             validate: {
-                isIn: [['Admin', 'Ouvrier', 'Employé']], // Correction des valeurs autorisées
+                isIn: [['Admin', 'Ouvrier', 'Employé']],
             },
         },
         hashedpassword: {
             type: DataTypes.STRING,
             allowNull: false,
         },
+        status: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: 'Actif', // Par défaut, un utilisateur est actif
+            validate: {
+                isIn: [['Actif', 'Inactif']],
+            },
+        },
     },
     {
         sequelize,
         tableName: "users",
-        timestamps: true, // Assure la gestion automatique de createdAt & updatedAt
+        timestamps: true,
         createdAt: "created_at",
         updatedAt: "updated_at",
     }

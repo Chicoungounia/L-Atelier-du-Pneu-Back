@@ -1,5 +1,7 @@
 import express from 'express';
-import { register, login } from '../controllers/userController'; // Importation des contrôleurs pour register et login
+import { register, login, modifierUser, modifierStatusUser, modifierRoleUser } from '../controllers/userController'; // Importation des contrôleurs pour register et login
+import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
+import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
 const router = express.Router();
 
@@ -8,8 +10,8 @@ const router = express.Router();
  * /users/register:
  *   post:
  *     summary: Inscription d'un nouvel utilisateur
- *     description: Permet à un utilisateur de s'inscrire avec son nom, prénom, pseudo, email et mot de passe.
- *     tags: 
+ *     description: Crée un nouvel utilisateur avec le rôle par défaut "Employé".
+ *     tags:
  *       - Authentification
  *     requestBody:
  *       required: true
@@ -20,7 +22,7 @@ const router = express.Router();
  *             required:
  *               - nom
  *               - prenom
- *               - pseudo
+ *               - speudo
  *               - email
  *               - password
  *             properties:
@@ -40,10 +42,14 @@ const router = express.Router();
  *               password:
  *                 type: string
  *                 format: password
- *                 example: "MotDePasse123!"
+ *                 example: "Motdepasse123!"
+ *               status:
+ *                 type: string
+ *                 enum: ["Actif", "Inactif"]
+ *                 default: "Actif"
  *     responses:
  *       201:
- *         description: Utilisateur créé avec succès
+ *         description: Utilisateur créé avec succès.
  *         content:
  *           application/json:
  *             schema:
@@ -58,46 +64,31 @@ const router = express.Router();
  *                 prenom:
  *                   type: string
  *                   example: "Jean"
- *                 pseudo:
+ *                 speudo:
  *                   type: string
  *                   example: "jdupont"
  *                 email:
  *                   type: string
- *                   format: email
  *                   example: "jean.dupont@example.com"
- *                 createdAt:
+ *                 role:
  *                   type: string
- *                   format: date-time
- *                 updatedAt:
+ *                   example: "Employé"
+ *                 status:
  *                   type: string
- *                   format: date-time
+ *                   example: "Actif"
  *       400:
- *         description: Requête invalide (champs manquants ou utilisateur existant)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "L'email est déjà utilisé ou des champs sont manquants."
+ *         description: Requête invalide (champs manquants, utilisateur existant...).
  *       500:
- *         description: Erreur interne du serveur
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- */               
+ *         description: Erreur interne du serveur.
+ */
 router.post('/register', register);
 
 /**
  * @swagger
  * /users/login:
  *   post:
- *     summary: Connexion d'un utilisateur
- *     description: Permet à un utilisateur de se connecter en fournissant son email et son mot de passe. Renvoie un token JWT en cas de succès.
- *     tags:
+ *     summary: Authentifie un utilisateur et retourne un token JWT
+ *     tags: 
  *       - Authentification
  *     requestBody:
  *       required: true
@@ -112,14 +103,14 @@ router.post('/register', register);
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "jean.dupont@example.com"
+ *                 example: user@example.com
  *               password:
  *                 type: string
  *                 format: password
- *                 example: "MotDePasse123!"
+ *                 example: "password123"
  *     responses:
  *       200:
- *         description: Connexion réussie, renvoie un token JWT
+ *         description: Connexion réussie, retourne un token JWT.
  *         content:
  *           application/json:
  *             schema:
@@ -130,48 +121,188 @@ router.post('/register', register);
  *                   example: "Connexion réussie"
  *                 token:
  *                   type: string
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                   example: "eyJhbGciOiJIUzI1NiIsIn..."
  *       400:
- *         description: Requête invalide (champs manquants)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "L'email et le mot de passe sont requis."
+ *         description: Requête invalide, champs manquants.
  *       401:
- *         description: Mot de passe incorrect
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Mot de passe incorrect."
+ *         description: Mot de passe incorrect.
+ *       403:
+ *         description: Compte inactif.
  *       404:
- *         description: Utilisateur non trouvé
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Utilisateur non trouvé."
+ *         description: Utilisateur non trouvé.
  *       500:
- *         description: Erreur interne du serveur
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Une erreur interne s'est produite."
+ *         description: Erreur interne du serveur.
  */
 router.post('/login', login);
+
+/**
+ * @swagger
+ * /users/modifier/{id}:
+ *   put:
+ *     summary: Modifier un utilisateur (réservé aux administrateurs)
+ *     tags: 
+ *       - Utilisateurs
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID de l'utilisateur à modifier
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nom:
+ *                 type: string
+ *                 example: "Dupont"
+ *               prenom:
+ *                 type: string
+ *                 example: "Jean"
+ *               speudo:
+ *                 type: string
+ *                 example: "jdupont"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "jean.dupont@example.com"
+ *               role:
+ *                 type: string
+ *                 enum: ["Admin", "Ouvrier", "Employé"]
+ *                 example: "Ouvrier"
+ *               status:
+ *                 type: string
+ *                 enum: ["Actif", "Inactif"]
+ *                 example: "Actif"
+ *     responses:
+ *       200:
+ *         description: Utilisateur mis à jour avec succès.
+ *       400:
+ *         description: Requête invalide.
+ *       401:
+ *         description: Accès refusé, token manquant.
+ *       403:
+ *         description: Accès interdit, seuls les administrateurs peuvent modifier un utilisateur.
+ *       404:
+ *         description: Utilisateur non trouvé.
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.put("/modifier/:id", verifyTokenMiddleware, isAdmin, modifierUser);
+
+/**
+ * @swagger
+ * /users/modifier/status/{id}:
+ *   put:
+ *     summary: Modifier le statut d'un utilisateur (Actif/Inactif) (réservé aux administrateurs)
+ *     description: Seuls les administrateurs peuvent modifier le statut d'un utilisateur.
+ *     tags:
+ *       - Utilisateurs
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de l'utilisateur à modifier
+ *     responses:
+ *       200:
+ *         description: Statut modifié avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Accès refusé, token manquant
+ *       403:
+ *         description: Accès interdit, seuls les administrateurs peuvent modifier le statut
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.put("/modifier/status/:id",verifyTokenMiddleware, isAdmin, modifierStatusUser);
+
+/**
+ * @swagger
+ * /users/modifier/role/{id}:
+ *   put:
+ *     summary: Modifier le rôle d'un utilisateur
+ *     description: Seuls les administrateurs peuvent modifier le rôle d'un utilisateur.
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'utilisateur dont le rôle doit être modifié.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: ["Admin", "Ouvrier", "Employé"]
+ *                 description: Le nouveau rôle de l'utilisateur.
+ *     responses:
+ *       200:
+ *         description: Rôle modifié avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     nom:
+ *                       type: string
+ *                     prenom:
+ *                       type: string
+ *                     speudo:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Requête invalide (ex. rôle invalide).
+ *       401:
+ *         description: Accès refusé, token manquant.
+ *       403:
+ *         description: Accès interdit, seul un administrateur peut modifier le rôle.
+ *       404:
+ *         description: Utilisateur non trouvé.
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.put("/modifier/role/:id",verifyTokenMiddleware, isAdmin, modifierRoleUser);
+
 
 export default router;
