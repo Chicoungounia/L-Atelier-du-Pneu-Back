@@ -205,3 +205,58 @@ export async function modifierRoleUser(req: Request, res: Response) {
 }
 
 
+export async function afficherAllUsers(req: Request, res: Response) {
+    try {
+        // Vérification du token JWT
+        const token = req.cookies?.jwt;
+        if (!token) {
+            res.status(401).json({ message: "Accès refusé, token manquant" });
+            return;
+        }
+
+        const decoded = verifyToken(token);
+        if (!decoded || typeof decoded === "string") {
+            res.status(403).json({ message: "Accès interdit, token invalide" });
+            return;
+        }
+
+        // Récupération de tous les utilisateurs
+        const users = await User.findAll({
+            attributes: { exclude: ["hashedpassword"] }, // Exclure le mot de passe
+        });
+
+        res.status(200).json({ message: "Liste des utilisateurs récupérée avec succès", users });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur interne du serveur", error });
+    }
+}
+
+
+export async function afficherUsersActif(req: Request, res: Response) {
+    try {
+        // Vérification du token JWT
+        const token = req.cookies?.jwt;
+        if (!token) {
+            res.status(401).json({ message: "Accès refusé, token manquant" });
+            return;
+        }
+
+        const decoded = verifyToken(token);
+        if (!decoded || typeof decoded === "string") {
+            res.status(403).json({ message: "Accès interdit, token invalide" });
+            return;
+        }
+
+        // Récupération des utilisateurs actifs
+        const users = await User.findAll({
+            where: { status: "Actif" },
+            attributes: { exclude: ["hashedpassword"] }, // Exclure le mot de passe
+        });
+
+        res.status(200).json({ message: "Liste des utilisateurs actifs récupérée avec succès", users });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur interne du serveur", error });
+    }
+}
+
+
