@@ -1,8 +1,10 @@
+import { User } from './userModels';
 import sequelize from "../config/database";
 import Client from "./clientModel";
 import Prestation from "./prestationModels";
 import Produit from "./produitModel";
 import RendezVous from "./rendezVousModel";
+import Facture from './factureModels';
 const syncDatabase = async () => {
     try {
     //alter: true Met à jour la structure automatiquement la structure de la base de données
@@ -13,4 +15,4 @@ const syncDatabase = async () => {
     console.error("Erreur lors de la synchronisation :", error);
     }
    };
-   export { syncDatabase, Produit, Client, RendezVous, Prestation };
+   export { syncDatabase, Produit, Client, RendezVous, Prestation, User, Facture };

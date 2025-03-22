@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Produit from "../models/produitModel";
 
+// Ajouter un produit avec status par défaut à true
 export const ajouterProduit = async (req: Request, res: Response) => {
   try {
     const {
@@ -23,15 +24,13 @@ export const ajouterProduit = async (req: Request, res: Response) => {
     if (
       !saison || !marque || !modele || !largeur_pneu || !profil_pneu || 
       !type_pneu || !diametre || !indice_charge || !indice_vitesse || 
-      !renfort || stock === undefined || prix === undefined || !image
+      !renfort || stock === undefined || prix === undefined
     ) {
-      res.status(400).json({ message: "Tous les champs sont requis." });
+      res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
       return;
     }
 
-  
-
-    // Création du produit
+    // Création du produit avec status par défaut à true
     const produit = await Produit.create({
       saison,
       marque,
@@ -45,20 +44,18 @@ export const ajouterProduit = async (req: Request, res: Response) => {
       renfort,
       stock,
       prix,
-      image
+      image: image || null, // Permet d'avoir un champ image null par défaut si non fourni
+      status: true, // Défini automatiquement sur true
     });
 
     res.status(201).json({ message: "Produit ajouté avec succès", produit });
-    return;
-
   } catch (error) {
     console.error("Erreur lors de l'ajout du produit:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
-    return;
   }
 };
 
-// Modifier un produit
+// Modifier un produit sans obligation de taper le status
 export const modifierProduit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -76,6 +73,7 @@ export const modifierProduit = async (req: Request, res: Response) => {
       stock,
       prix,
       image,
+      status, // Optionnel, pas obligatoire à taper
     } = req.body;
 
     // Vérification que l'ID est un nombre valide
@@ -93,9 +91,9 @@ export const modifierProduit = async (req: Request, res: Response) => {
       return;
     }
 
-    // Mise à jour des propriétés du produit
+    // Mise à jour des propriétés du produit, sans obliger à entrer `status`
     const updatedProduit = await produit.update({
-      saison: saison || produit.saison, // Si saison est fourni, mettre à jour, sinon garder l'ancienne valeur
+      saison: saison || produit.saison,
       marque: marque || produit.marque,
       modele: modele || produit.modele,
       largeur_pneu: largeur_pneu || produit.largeur_pneu,
@@ -105,12 +103,12 @@ export const modifierProduit = async (req: Request, res: Response) => {
       indice_charge: indice_charge || produit.indice_charge,
       indice_vitesse: indice_vitesse || produit.indice_vitesse,
       renfort: renfort || produit.renfort,
-      stock: stock !== undefined ? stock : produit.stock, // Si stock est fourni, utiliser sinon garder l'ancien
-      prix: prix !== undefined ? prix : produit.prix, // De même pour prix
+      stock: stock !== undefined ? stock : produit.stock,
+      prix: prix !== undefined ? prix : produit.prix,
       image: image || produit.image,
+      status: status !== undefined ? status : produit.status, // Conserve l'ancien status si non fourni
     });
 
-    // Réponse succès avec le produit mis à jour
     res.status(200).json({ message: "Produit modifié avec succès", produit: updatedProduit });
   } catch (error) {
     console.error("Erreur lors de la modification du produit:", error);
@@ -119,32 +117,30 @@ export const modifierProduit = async (req: Request, res: Response) => {
 };
 
 
-export const deleteProduit = async (req: Request, res: Response) => {
+export const afficherAllTrueProduit = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const produitsActifs = await Produit.findAll({
+      where: { status: true },
+    });
 
-    // Vérification que l'ID est un nombre valide
-    if (isNaN(Number(id))) {
-      res.status(400).json({ message: "ID invalide" });
-      return;
-    }
-
-    // Recherche du produit par ID
-    const produit = await Produit.findByPk(id);
-
-    if (!produit) {
-      res.status(404).json({ message: "Produit non trouvé" });
-      return;
-    }
-
-    // Suppression du produit
-    await produit.destroy();
-
-    res.status(200).json({ message: "Produit supprimé avec succès" });
+    res.status(200).json(produitsActifs);
     return;
-
   } catch (error) {
-    console.error("Erreur lors de la suppression du produit:", error);
+    console.error("Erreur lors de la récupération des produits actifs:", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+    return;
+  }
+};
+
+// Afficher tous les produits (actifs et inactifs)
+export const afficherAllProduit = async (req: Request, res: Response) => {
+  try {
+    const tousLesProduits = await Produit.findAll();
+
+    res.status(200).json(tousLesProduits);
+    return;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des produits:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
     return;
   }

@@ -1,12 +1,12 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../config/database";
 
-// Définition des attributs de la prestation
 interface PrestationAttributes {
   id?: number;
   travail: string;
   description: string;
   prix: number;
+  status?: Boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,6 +19,7 @@ class Prestation extends Model<PrestationAttributes, PrestationCreationAttribute
   public travail!: string;
   public description!: string;
   public prix!: number;
+  public status!: Boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -42,6 +43,11 @@ Prestation.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },  
   },
   {
     sequelize,

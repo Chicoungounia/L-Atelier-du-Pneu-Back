@@ -1,5 +1,7 @@
 import express from 'express';
-import { ajouterPrestation, deletePrestation, modifierPrestation } from '../controllers/prestationController';
+import { afficherAllPrestations, afficherStatusAllTruePrestation, ajouterPrestation, modifierPrestation } from '../controllers/prestationController';
+import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
+import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
 const router = express.Router();
 
@@ -11,6 +13,8 @@ const router = express.Router();
  *     description: Crée une nouvelle prestation avec les données fournies.
  *     tags:
  *       - Prestations
+ *     security:
+ *       - cookieAuth: []  # Utilisation d'un token JWT pour authentification
  *     requestBody:
  *       required: true
  *       content:
@@ -64,23 +68,25 @@ const router = express.Router();
  *       500:
  *         description: Erreur interne du serveur
  */
-router.post('/ajouter', ajouterPrestation);
+router.post('/ajouter',verifyTokenMiddleware, isAdmin, ajouterPrestation);
 
 /**
  * @swagger
  * /prestation/modifier/{id}:
  *   put:
- *     summary: Modifier une prestation existante
- *     description: Met à jour une prestation avec les champs fournis. Les champs non envoyés ne seront pas modifiés.
+ *     summary: Modifier une prestation (Admin uniquement)
+ *     description: Met à jour les informations d'une prestation existante, y compris son statut.
  *     tags:
  *       - Prestations
+ *     security:
+ *       - cookieAuth: []  # Utilisation d'un token JWT pour authentification
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID de la prestation à modifier
  *         schema:
  *           type: integer
- *         description: ID de la prestation à modifier
  *     requestBody:
  *       required: true
  *       content:
@@ -90,48 +96,123 @@ router.post('/ajouter', ajouterPrestation);
  *             properties:
  *               travail:
  *                 type: string
- *                 example: "Montage équilibrage"
+ *                 example: "Réparation de pneu"
  *               description:
  *                 type: string
- *                 example: "Montage et équilibrage de pneus neufs"
+ *                 example: "Réparation rapide d'une crevaison"
  *               prix:
  *                 type: number
- *                 example: 60.00
+ *                 format: float
+ *                 example: 19.99
+ *               status:
+ *                 type: boolean
+ *                 example: false
  *     responses:
  *       200:
- *         description: Prestation mise à jour avec succès
+ *         description: Prestation modifiée avec succès.
  *       400:
- *         description: Erreur de validation des données
+ *         description: Requête invalide.
+ *       401:
+ *         description: Non autorisé, connexion requise.
+ *       403:
+ *         description: Accès interdit, rôle Admin requis.
  *       404:
- *         description: Prestation non trouvée
+ *         description: Prestation non trouvée.
  *       500:
- *         description: Erreur interne du serveur
+ *         description: Erreur interne du serveur.
  */
-router.put("/modifier/:id", modifierPrestation);
+router.put("/modifier/:id",verifyTokenMiddleware, isAdmin, modifierPrestation);
 
 /**
  * @swagger
- * /prestation/supprimer/{id}:
- *   delete:
- *     summary: Supprimer une prestation
- *     description: Supprime une prestation existante en fonction de son ID.
+ * /prestations/affichet/status/true:
+ *   get:
+ *     summary: Récupérer toutes les prestations actives
+ *     description: Retourne la liste des prestations ayant un statut actif (status = true).
  *     tags:
  *       - Prestations
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID de la prestation à supprimer
  *     responses:
  *       200:
- *         description: Prestation supprimée avec succès
- *       404:
- *         description: Prestation non trouvée
+ *         description: Liste des prestations actives récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   travail:
+ *                     type: string
+ *                     example: "Changement de pneu"
+ *                   description:
+ *                     type: string
+ *                     example: "Remplacement de pneu pour voiture"
+ *                   prix:
+ *                     type: number
+ *                     format: float
+ *                     example: 50.00
+ *                   status:
+ *                     type: boolean
+ *                     example: true
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                   updated_at:
+ *                     type: string
+ *                     format: date-time
  *       500:
- *         description: Erreur interne du serveur
+ *         description: Erreur serveur lors de la récupération des prestations actives.
  */
-router.delete("/supprimer/:id", deletePrestation);
+router.get("/affichet/status/true", afficherStatusAllTruePrestation);
+
+/**
+ * @swagger
+ * /prestation/afficher/all:
+ *   get:
+ *     summary: Récupère toutes les prestations
+ *     description: Retourne la liste de toutes les prestations disponibles.
+ *     tags:
+ *       - Prestations
+ *     security:
+ *       - cookieAuth: []  # Utilisation d'un token JWT pour authentification
+ *     responses:
+ *       200:
+ *         description: Liste des prestations récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   travail:
+ *                     type: string
+ *                     example: "Changement de pneus"
+ *                   description:
+ *                     type: string
+ *                     example: "Remplacement des pneus avant et arrière"
+ *                   prix:
+ *                     type: number
+ *                     format: float
+ *                     example: 49.99
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                   updated_at:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get("/afficher/all", verifyTokenMiddleware, isAdmin, afficherAllPrestations)
+
+
+
 
 export default router;

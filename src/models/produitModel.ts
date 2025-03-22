@@ -17,6 +17,7 @@ interface ProduitAttributes {
   stock: number;
   prix: number;
   image: string | null;
+  status: Boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -40,6 +41,7 @@ export class Produit extends Model<ProduitAttributes> implements ProduitAttribut
   public stock!: number;
   public prix!: number;
   public image!: string | null;
+  public status!: Boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -103,6 +105,11 @@ Produit.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+     status: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: true,
+        },
   },
   {
     sequelize,
