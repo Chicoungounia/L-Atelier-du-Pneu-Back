@@ -70,7 +70,7 @@ User.init(
         status: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: 'Actif', // Par défaut, un utilisateur est actif
+            defaultValue: 'Actif', 
             validate: {
                 isIn: [['Actif', 'Inactif']],
             },

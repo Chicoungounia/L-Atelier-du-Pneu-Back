@@ -8,7 +8,8 @@ interface ClientAttributes {
   adresse: string;
   email: string;
   telephone: string;
-  status: "privé" | "professionnel"; 
+  type: "Privé" | "Professionnel";
+  status?: 'Actif' | 'Inactif'; // Ajout du statut actif/inactif 
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -20,7 +21,8 @@ class Client extends Model<ClientAttributes> implements ClientAttributes {
   public adresse!: string;
   public email!: string;
   public telephone!: string;
-  public status!: "privé" | "professionnel"; 
+  public type!: "Privé" | "Professionnel"; 
+  public status!: 'Actif' | 'Inactif'; // Ajout du statut actif/inactif
   public readonly updatedAt!: Date;
 }
 
@@ -48,16 +50,21 @@ Client.init(
       allowNull: false,
       unique: true,
       validate: {
-        isEmail: true, // Validation email
+        isEmail: true,
       },
     },
     telephone: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    status: {
-      type: DataTypes.ENUM("privé", "professionnel"),
+    type: {
+      type: DataTypes.ENUM("Privé", "Professionnel"),
       allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM("Actif", "Inactif"),
+      allowNull: false,
+      defaultValue: "Actif", // ✅ Valeur par défaut définie ici
     },
   },
   {
@@ -68,5 +75,6 @@ Client.init(
     updatedAt: "updated_at",
   }
 );
+
 
 export default Client;

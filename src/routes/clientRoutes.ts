@@ -1,5 +1,6 @@
 import express from 'express';
-import { ajouterClient, deleteClient, modifierClient } from '../controllers/clientController';
+import { afficherAllClients, afficherClientsActifs, afficherUnClient, ajouterClient, modifierClient, modifierStatusClient } from '../controllers/clientController';
+import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 
 const router = express.Router();
 
@@ -8,9 +9,11 @@ const router = express.Router();
  * /clients/ajouter:
  *   post:
  *     summary: Ajouter un nouveau client
- *     description: Crée un nouveau client avec les informations fournies.
+ *     description: Crée un nouveau client dans la base de données. Nécessite une authentification avec un token JWT.
  *     tags:
  *       - Clients
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -19,32 +22,27 @@ const router = express.Router();
  *             type: object
  *             required:
  *               - nom
- *               - status
+ *               - type
  *             properties:
  *               nom:
  *                 type: string
- *                 description: Nom du client
  *                 example: "Dupont"
  *               prenom:
  *                 type: string
- *                 description: Prénom du client (optionnel)
  *                 example: "Jean"
  *               adresse:
  *                 type: string
- *                 description: Adresse du client
  *                 example: "12 rue des Fleurs, 75000 Paris"
  *               email:
  *                 type: string
- *                 description: Email du client (optionnel)
+ *                 format: email
  *                 example: "jean.dupont@example.com"
  *               telephone:
  *                 type: string
- *                 description: Numéro de téléphone du client (optionnel)
- *                 example: "+33612345678"
- *               status:
+ *                 example: "0601020304"
+ *               type:
  *                 type: string
- *                 enum: ["privé", "professionnel"]
- *                 description: Statut du client
+ *                 enum: ["Privé", "Professionnel"]
  *                 example: "privé"
  *     responses:
  *       201:
@@ -54,75 +52,38 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                 nom:
+ *                 message:
  *                   type: string
- *                   example: "Dupont"
- *                 prenom:
- *                   type: string
- *                   example: "Jean"
- *                 adresse:
- *                   type: string
- *                   example: "12 rue des Fleurs, 75000 Paris"
- *                 email:
- *                   type: string
- *                   example: "jean.dupont@example.com"
- *                 telephone:
- *                   type: string
- *                   example: "+33612345678"
- *                 status:
- *                   type: string
- *                   example: "privé"
+ *                   example: "Client ajouté avec succès"
+ *                 client:
+ *                   $ref: '#/components/schemas/Client'
  *       400:
- *         description: Requête invalide (champs requis manquants ou erreur de validation)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Veuillez remplir tous les champs requis."
+ *         description: Requête invalide (données manquantes ou incorrectes)
  *       401:
- *         description: Non autorisé (problème d'authentification)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Accès non autorisé. Veuillez vous authentifier."
+ *         description: Non autorisé (JWT manquant ou invalide)
  *       500:
  *         description: Erreur interne du serveur
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Erreur interne du serveur. Veuillez réessayer plus tard."
  */
-router.post('/ajouter', ajouterClient);
+
+router.post('/ajouter',verifyTokenMiddleware, ajouterClient);
 
 /**
  * @swagger
  * /clients/modifier/{id}:
  *   put:
  *     summary: Modifier un client existant
- *     description: Met à jour les informations d'un client en fonction de son ID.
- *     tags: 
+ *     description: Met à jour les informations d'un client. Nécessite une authentification avec un token JWT.
+ *     tags:
  *       - Clients
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID du client à modifier.
  *         schema:
  *           type: integer
+ *         description: ID du client à modifier
  *     requestBody:
  *       required: true
  *       content:
@@ -132,31 +93,30 @@ router.post('/ajouter', ajouterClient);
  *             properties:
  *               nom:
  *                 type: string
- *                 description: Nom du client
  *                 example: "Dupont"
  *               prenom:
  *                 type: string
- *                 description: Prénom du client
  *                 example: "Jean"
  *               adresse:
  *                 type: string
- *                 description: Adresse du client
- *                 example: "12 rue de Paris"
+ *                 example: "12 rue des Fleurs, 75000 Paris"
  *               email:
  *                 type: string
- *                 description: Email du client
- *                 example: "jean.dupont@email.com"
+ *                 format: email
+ *                 example: "jean.dupont@example.com"
  *               telephone:
  *                 type: string
- *                 description: Numéro de téléphone du client
- *                 example: "0612345678"
+ *                 example: "0601020304"
+ *               type:
+ *                 type: string
+ *                 enum: ["Privé", "Rrofessionnel"]
+ *                 example: "professionnel"
  *               status:
  *                 type: string
- *                 enum: ["privé", "professionnel"]
- *                 description: Statut du client
- *                 example: "professionnel"
+ *                 enum: ["Actif", "Inactif"]
+ *                 example: "Actif"
  *     responses:
- *       201:
+ *       200:
  *         description: Client modifié avec succès
  *         content:
  *           application/json:
@@ -169,55 +129,192 @@ router.post('/ajouter', ajouterClient);
  *                 client:
  *                   $ref: '#/components/schemas/Client'
  *       400:
- *         description: Requête invalide (champs requis manquants ou ID invalide)
+ *         description: ID invalide ou requête incorrecte
+ *       401:
+ *         description: Non autorisé (JWT manquant ou invalide)
  *       404:
  *         description: Client non trouvé
  *       500:
  *         description: Erreur interne du serveur
  */
-router.put('/modifier/:id', modifierClient);
+router.put('/modifier/:id',verifyTokenMiddleware, modifierClient);
 
 /**
  * @swagger
- * /clients/supprimer/{id}:
- *   delete:
- *     summary: Supprime un client
- *     description: Supprime un client existant par son ID.
+ * /clients/modifier/status/{id}:
+ *   put:
+ *     summary: Modifier uniquement le statut d'un client
+ *     description: Permet de mettre à jour uniquement le statut d'un client existant (Actif/Inactif). Nécessite une authentification avec un token JWT.
  *     tags:
  *       - Clients
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID du client à supprimer
+ *         description: ID du client à modifier
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: ["Actif", "Inactif"]
+ *                 example: "Inactif"
  *     responses:
  *       200:
- *         description: Client supprimé avec succès
+ *         description: Statut du client modifié avec succès
  *         content:
  *           application/json:
- *             example:
- *               message: "Client supprimé avec succès"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Statut du client modifié avec succès"
+ *                 client:
+ *                   $ref: '#/components/schemas/Client'
+ *       400:
+ *         description: Requête invalide (ID ou statut incorrect)
+ *       401:
+ *         description: Non autorisé (JWT manquant ou invalide)
+ *       404:
+ *         description: Client non trouvé
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.put('/modifier/status/:id',verifyTokenMiddleware, modifierStatusClient);
+
+/**
+ * @swagger
+ * /clients/afficher/actifs:
+ *   get:
+ *     summary: Récupérer la liste des clients actifs
+ *     description: Permet d'afficher uniquement les clients ayant le statut "Actif". Nécessite une authentification avec un token JWT.
+ *     tags:
+ *       - Clients
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des clients actifs récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Liste des clients actifs récupérée avec succès"
+ *                 clients:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Client'
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get('/afficher/actifs', verifyTokenMiddleware, afficherClientsActifs);
+
+/**
+ * @swagger
+ * /clients/afficher/all:
+ *   get:
+ *     summary: Récupérer tous les clients
+ *     description: Récupère la liste complète des clients enregistrés. Nécessite une authentification avec un token JWT.
+ *     tags:
+ *       - Clients
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des clients récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Liste des clients récupérée avec succès"
+ *                 clients:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Client'
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get('/afficher/all', verifyTokenMiddleware, afficherAllClients);
+
+/**
+ * @swagger
+ * /clients/afficher/{id}:
+ *   get:
+ *     summary: Récupérer un client par ID
+ *     description: Retourne les informations d'un client spécifique.
+ *     tags:
+ *       - Clients
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du client
+ *     responses:
+ *       200:
+ *         description: Client récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Client récupéré avec succès
+ *                 client:
+ *                   $ref: '#/components/schemas/Client'
  *       400:
  *         description: ID invalide
  *         content:
  *           application/json:
- *             example:
- *               message: "ID invalide"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: ID invalide
  *       404:
  *         description: Client non trouvé
  *         content:
  *           application/json:
- *             example:
- *               message: "Client non trouvé"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Client non trouvé
  *       500:
  *         description: Erreur interne du serveur
  *         content:
  *           application/json:
- *             example:
- *               message: "Erreur interne du serveur"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Erreur interne du serveur
  */
-router.delete('/supprimer/:id', deleteClient);
+router.get('/afficher/:id', verifyTokenMiddleware, afficherUnClient);
+
 
 export default router;

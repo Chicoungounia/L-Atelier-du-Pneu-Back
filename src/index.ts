@@ -1,16 +1,17 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser'; // ✅ Import correct
+import cookieParser from 'cookie-parser';
 import { testConnection } from './config/database';
 import { syncDatabase } from './models/syncModels';
 import swaggerDocs from './config/swagger';
 import swaggerUi from 'swagger-ui-express';
-import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 import produitRoutes from './routes/produitRoutes';
 import clientRoutes from './routes/clientRoutes';
 import rendezVousRoutes from './routes/rendezVousRoutes';
 import prestationRoutes from './routes/prestationRoutes';
 import factureRoutes from './routes/factureRoutes';
+import authRoutes from './routes/authRoutes';
 import { v2 as cloudinary } from 'cloudinary';
 
 // ✅ Charger les variables d’environnement en premier
@@ -34,7 +35,8 @@ console.log("Lancement du serveur...");
 app.use(express.json());
 
 // ✅ Ajout des routes
-app.use('/users', authRoutes);
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 app.use('/produits', produitRoutes);
 app.use('/clients', clientRoutes);
 app.use("/rendezvous", rendezVousRoutes);
