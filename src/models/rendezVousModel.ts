@@ -1,16 +1,16 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
 import Client from "./clientModel";
-import { User } from "./userModels"; // Assurez-vous que vous importez correctement le modèle User
+import { User } from "./userModels"; 
 
 interface RendezVousAttributes {
   id?: number;
   clientId: number;
-  userId: number; // Remplacez `ouvrierId` par `userId`
+  userId: number;
   pont: 1 | 2 | 3; 
   dateDebut: Date;
   dateFin: Date;
-  status: "réserver" | "annuler";
+  status: "Réserver" | "Annuler" | "Effectuer";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -22,7 +22,7 @@ class RendezVous extends Model<RendezVousAttributes> implements RendezVousAttrib
   public pont!: 1 | 2 | 3; 
   public dateDebut!: Date;
   public dateFin!: Date;
-  public status!: "réserver" | "annuler"; 
+  public status!: "Réserver" | "Annuler" | "Effectuer"; 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -68,9 +68,9 @@ RendezVous.init(
     status: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: "réserver", 
+      defaultValue: "Réserver", 
       validate: {
-        isIn: [["réserver", "annuler"]], 
+        isIn: [["Réserver", "Annuler", "Effectuer"]], 
       },
     },
   },

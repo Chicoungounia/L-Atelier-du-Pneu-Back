@@ -10,7 +10,7 @@ interface UserAttributes {
     email: string;
     role?: 'Admin' | 'Ouvrier' | 'Employé';
     hashedpassword: string;
-    status?: 'Actif' | 'Inactif'; // Ajout du statut actif/inactif
+    status?: 'Actif' | 'Inactif'; 
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -58,9 +58,9 @@ User.init(
         role: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: 'Employé',
+            defaultValue: "Employé", // Toujours employé par défaut
             validate: {
-                isIn: [['Admin', 'Ouvrier', 'Employé']],
+                isIn: [["Admin", "Ouvrier", "Employé"]],
             },
         },
         hashedpassword: {
@@ -70,9 +70,9 @@ User.init(
         status: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: 'Actif', 
+            defaultValue: "Actif", // Toujours actif par défaut
             validate: {
-                isIn: [['Actif', 'Inactif']],
+                isIn: [["Actif", "Inactif"]],
             },
         },
     },
@@ -82,5 +82,11 @@ User.init(
         timestamps: true,
         createdAt: "created_at",
         updatedAt: "updated_at",
+        hooks: {
+            beforeCreate: (user: User) => {
+                // Générer speudo : prenom + espace + première lettre de nom + .
+                user.speudo = `${user.prenom} ${user.nom.charAt(0)}.`;
+            },
+        },
     }
 );

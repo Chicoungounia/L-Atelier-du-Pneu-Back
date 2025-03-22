@@ -8,8 +8,8 @@ const router = express.Router();
  * @swagger
  * /auth/register:
  *   post:
- *     summary: Inscription d'un nouvel utilisateur
- *     description: Crée un nouvel utilisateur avec le rôle par défaut "Employé".
+ *     summary: Créer un nouvel utilisateur
+ *     description: Permet d'enregistrer un nouvel utilisateur avec un rôle par défaut de "Employé" et un statut "Actif".
  *     tags:
  *       - Authentification
  *     requestBody:
@@ -21,31 +21,23 @@ const router = express.Router();
  *             required:
  *               - nom
  *               - prenom
- *               - speudo
  *               - email
  *               - password
  *             properties:
  *               nom:
  *                 type: string
- *                 example: "Dupont"
+ *                 example: Dupont
  *               prenom:
  *                 type: string
- *                 example: "Jean"
- *               speudo:
- *                 type: string
- *                 example: "jdupont"
+ *                 example: Luc
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "jean.dupont@example.com"
+ *                 example: luc.dupont@example.com
  *               password:
  *                 type: string
  *                 format: password
- *                 example: "Motdepasse123!"
- *               status:
- *                 type: string
- *                 enum: ["Actif", "Inactif"]
- *                 default: "Actif"
+ *                 example: "luc"
  *     responses:
  *       201:
  *         description: Utilisateur créé avec succès.
@@ -59,26 +51,43 @@ const router = express.Router();
  *                   example: 1
  *                 nom:
  *                   type: string
- *                   example: "Dupont"
+ *                   example: Dupont
  *                 prenom:
  *                   type: string
- *                   example: "Jean"
+ *                   example: Luc
  *                 speudo:
  *                   type: string
- *                   example: "jdupont"
+ *                   example: Luc D.
  *                 email:
  *                   type: string
- *                   example: "jean.dupont@example.com"
+ *                   format: email
+ *                   example: luc.dupont@example.com
  *                 role:
  *                   type: string
- *                   example: "Employé"
+ *                   example: Employé
  *                 status:
  *                   type: string
- *                   example: "Actif"
+ *                   example: Actif
  *       400:
- *         description: Requête invalide (champs manquants, utilisateur existant...).
+ *         description: Erreur de validation des données.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Cet utilisateur existe déjà !
  *       500:
  *         description: Erreur interne du serveur.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Erreur interne du serveur.
  */
 router.post('/register', register);
 

@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { ajouterRendezVous, deleteRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
+import { afficherAllRendezVous, afficherAllRendezVousClient, afficherAllRendezVousReserver, ajouterRendezVous, deleteRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
+import { verifyTokenMiddleware } from "../middlewares/verifyTokenMiddleware";
 
 const router = Router();
-
-
 
 
 /**
@@ -45,7 +44,7 @@ const router = Router();
  *                 description: Heure de fin du rendez-vous (format ISO 8601)
  *               status:
  *                 type: string
- *                 enum: ["réserver", "annuler"]
+ *                 enum: ["Réserver", "Annuler", "Effectuer"]
  *                 example: "réserver"
  *                 description: Statut du rendez-vous
  *     responses:
@@ -82,10 +81,7 @@ const router = Router();
  *                   type: string
  *                   example: "Erreur interne du serveur."
  */
-
-router.post("/ajouter", ajouterRendezVous);
-
-
+router.post("/ajouter", verifyTokenMiddleware, ajouterRendezVous);
 
 /**
  * @swagger
@@ -133,7 +129,7 @@ router.post("/ajouter", ajouterRendezVous);
  *                 description: Heure de fin du rendez-vous (format ISO 8601)
  *               status:
  *                 type: string
- *                 enum: ["réserver", "annuler"]
+ *                 enum: ["Réserver", "Annuler", "Effectuer"]
  *                 example: "réserver"
  *                 description: Statut du rendez-vous
  *     responses:
@@ -180,11 +176,7 @@ router.post("/ajouter", ajouterRendezVous);
  *                   type: string
  *                   example: "Erreur interne du serveur."
  */
-
-
-router.put("/modifier/:id", modifierRendezVous);
-
-
+router.put("/modifier/:id",verifyTokenMiddleware, modifierRendezVous);
 
 /**
  * @swagger
@@ -225,9 +217,180 @@ router.put("/modifier/:id", modifierRendezVous);
  *       500:
  *         description: Erreur interne du serveur
  */
-router.delete("/delete/:id", deleteRendezVous);
+router.delete("/delete/:id",verifyTokenMiddleware, deleteRendezVous);
+/**
+ * @swagger
+ * /rendezvous/afficher/all:
+ *   get:
+ *     summary: Récupère tous les rendez-vous
+ *     description: Retourne la liste de tous les rendez-vous enregistrés dans la base de données.
+ *     tags:
+ *       - Rendez-vous
+ *     responses:
+ *       200:
+ *         description: Liste de tous les rendez-vous récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   clientId:
+ *                     type: integer
+ *                     example: 5
+ *                   userId:
+ *                     type: integer
+ *                     example: 2
+ *                   pont:
+ *                     type: integer
+ *                     enum: [1, 2, 3]
+ *                     example: 1
+ *                   dateDebut:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-04-01T08:00:00.000Z"
+ *                   dateFin:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-04-01T09:00:00.000Z"
+ *                   status:
+ *                     type: string
+ *                     enum: ["Réserver", "Annuler", "Effectuer"]
+ *                     example: "Réserver"
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-22T12:00:00.000Z"
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-22T12:30:00.000Z"
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get("/afficher/all", verifyTokenMiddleware, afficherAllRendezVous);
 
-// router.get("/all", obtenirTousLesRendezVous);
-// router.get("/rd/:id", obtenirRendezVousParId);
+/**
+ * @swagger
+ * /rendezvous/afficher/all/reserver:
+ *   get:
+ *     summary: Récupère tous les rendez-vous avec le statut "Réserver"
+ *     description: Retourne la liste des rendez-vous ayant le statut "Réserver".
+ *     tags:
+ *       - Rendez-vous
+ *     responses:
+ *       200:
+ *         description: Liste des rendez-vous réservés récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   clientId:
+ *                     type: integer
+ *                     example: 5
+ *                   userId:
+ *                     type: integer
+ *                     example: 2
+ *                   pont:
+ *                     type: integer
+ *                     enum: [1, 2, 3]
+ *                     example: 1
+ *                   dateDebut:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-04-01T08:00:00.000Z"
+ *                   dateFin:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-04-01T09:00:00.000Z"
+ *                   status:
+ *                     type: string
+ *                     example: "Réserver"
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-22T12:00:00.000Z"
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-22T12:30:00.000Z"
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get("/afficher/all/reserver", verifyTokenMiddleware, afficherAllRendezVousReserver);
+
+/**
+ * @swagger
+ * /rendezvous/client/{clientId}:
+ *   get:
+ *     summary: Récupère tous les rendez-vous d'un client spécifique
+ *     description: Retourne la liste des rendez-vous d'un client donné en fonction de son `clientId`.
+ *     tags:
+ *       - RendezVous
+ *     parameters:
+ *       - in: path
+ *         name: clientId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du client dont on veut récupérer les rendez-vous
+ *     responses:
+ *       200:
+ *         description: Liste des rendez-vous du client récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   clientId:
+ *                     type: integer
+ *                     example: 5
+ *                   userId:
+ *                     type: integer
+ *                     example: 2
+ *                   pont:
+ *                     type: integer
+ *                     enum: [1, 2, 3]
+ *                     example: 1
+ *                   dateDebut:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-04-01T08:00:00.000Z"
+ *                   dateFin:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-04-01T09:00:00.000Z"
+ *                   status:
+ *                     type: string
+ *                     example: "Réserver"
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-22T12:00:00.000Z"
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-22T12:30:00.000Z"
+ *       400:
+ *         description: ID client invalide.
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get("/afficher/:clientId", verifyTokenMiddleware, afficherAllRendezVousClient);
 
 export default router;

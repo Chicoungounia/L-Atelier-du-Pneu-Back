@@ -65,13 +65,15 @@ export const ajouterRendezVous = async (req: Request, res: Response) => {
             pont,
             dateDebut: dateDebutObj,
             dateFin: dateFinObj,
-            status: status || "réserver",
+            status: status || "Réserver",
         });
 
         res.status(201).json({ message: "Rendez-vous ajouté avec succès", rendezVous });
+        return;
     } catch (error) {
         console.error("Erreur lors de l'ajout du rendez-vous:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
+        return;
     }
 };
 
@@ -143,9 +145,11 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
         });
 
         res.status(200).json({ message: "Rendez-vous modifié avec succès", rendezVous });
+        return;
     } catch (error) {
         console.error("Erreur lors de la modification du rendez-vous:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
+        return;
     }
 };
 
@@ -161,8 +165,64 @@ export const deleteRendezVous = async (req: Request, res: Response) => {
 
         await rendezVous.destroy();
         res.status(200).json({ message: "Rendez-vous supprimé avec succès." });
+        return;
     } catch (error) {
         console.error("Erreur lors de la suppression du rendez-vous:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
+        return;
     }
 };
+
+export const afficherAllRendezVous = async (req: Request, res: Response) => {
+    try {
+      const rendezVous = await RendezVous.findAll();
+      res.status(200).json(rendezVous);
+      return;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des rendez-vous:", error);
+      res.status(500).json({ message: "Erreur interne du serveur" });
+      return;
+    }
+  };
+  
+  /**
+   * Afficher tous les rendez-vous avec le status "Réserver"
+   */
+  export const afficherAllRendezVousReserver = async (req: Request, res: Response) => {
+    try {
+      const rendezVousReserves = await RendezVous.findAll({
+        where: { status: "Réserver" },
+      });
+      res.status(200).json(rendezVousReserves);
+      return;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des rendez-vous réservés:", error);
+      res.status(500).json({ message: "Erreur interne du serveur" });
+      return;
+    }
+  };
+  
+  /**
+   * Afficher tous les rendez-vous d'un client donné (via clientId)
+   */
+  export const afficherAllRendezVousClient = async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+  
+      if (!clientId || isNaN(Number(clientId))) {
+        res.status(400).json({ message: "ID client invalide." });
+        return;
+      }
+  
+      const rendezVousClient = await RendezVous.findAll({
+        where: { clientId },
+      });
+  
+      res.status(200).json(rendezVousClient);
+      return;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des rendez-vous du client:", error);
+      res.status(500).json({ message: "Erreur interne du serveur" });
+      return;
+    }
+  };

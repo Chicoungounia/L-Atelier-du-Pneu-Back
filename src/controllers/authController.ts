@@ -5,22 +5,10 @@ import { User } from '../models/userModels';
 
 export async function register(req: Request, res: Response) {
     try {
-        const { nom, prenom, speudo, email, password, role, status } = req.body;
+        const { nom, prenom, email, password } = req.body;
 
-        if (!nom || !prenom || !speudo || !email || !password) {
+        if (!nom || !prenom || !email || !password) {
             res.status(400).json({ message: "Veuillez remplir tous les champs requis." });
-            return;
-        }
-
-        const validRoles = ["Admin", "Ouvrier", "Employé"];
-        if (role && !validRoles.includes(role)) {
-            res.status(400).json({ message: `Le rôle doit être l'un des suivants : ${validRoles.join(", ")}` });
-            return;
-        }
-
-        const validStatus = ["Actif", "Inactif"];
-        if (status && !validStatus.includes(status)) {
-            res.status(400).json({ message: "Le statut doit être 'Actif' ou 'Inactif'." });
             return;
         }
 
@@ -33,11 +21,9 @@ export async function register(req: Request, res: Response) {
         const newUser = await User.create({
             nom,
             prenom,
-            speudo,
             email,
-            role: role || "Employé",
-            status: status || "Actif", // Valeur par défaut
             hashedpassword: await hashPassword(password),
+            speudo: ''
         });
 
         const { hashedpassword, ...userWithoutPassword } = newUser.toJSON();
@@ -48,6 +34,8 @@ export async function register(req: Request, res: Response) {
         return;
     }
 }
+
+
 
 export async function login(req: Request, res: Response) {
     try {
@@ -77,8 +65,10 @@ export async function login(req: Request, res: Response) {
         const token = generateToken({ id: user.id, email: user.email, role: user.role });
         res.cookie("jwt", token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
         res.status(200).json({ message: "Connexion réussie", token });
+        return;
     } catch (err: any) {
         res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
+        return;
     }
 }
 
