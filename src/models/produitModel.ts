@@ -15,7 +15,7 @@ interface ProduitAttributes {
   indice_vitesse: "H" | "T" | "V" | "W" | "Y";
   renfort: "XL" | "C" | "LT" | "RF" | "RS";
   stock: number;
-  prix: number;
+  prix_htva: number;
   image: string | null;
   status: Boolean;
   createdAt?: Date;
@@ -39,7 +39,7 @@ export class Produit extends Model<ProduitAttributes> implements ProduitAttribut
   public indice_vitesse!: "H" | "T" | "V" | "W" | "Y";
   public renfort!: "XL" | "C" | "LT" | "RF" | "RS";
   public stock!: number;
-  public prix!: number;
+  public prix_htva!: number;
   public image!: string | null;
   public status!: Boolean;
   public readonly createdAt!: Date;
@@ -97,7 +97,7 @@ Produit.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    prix: {
+    prix_htva: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },

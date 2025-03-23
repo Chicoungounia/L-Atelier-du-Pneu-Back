@@ -32,7 +32,7 @@ const router = express.Router();
  *               description:
  *                 type: string
  *                 example: "Montage de quatre pneus neufs sur jantes."
- *               prix:
+ *               prix_htva:
  *                 type: number
  *                 example: 50.00
  *     responses:
@@ -100,7 +100,7 @@ router.post('/ajouter',verifyTokenMiddleware, isAdmin, ajouterPrestation);
  *               description:
  *                 type: string
  *                 example: "Réparation rapide d'une crevaison"
- *               prix:
+ *               prix_htva:
  *                 type: number
  *                 format: float
  *                 example: 19.99

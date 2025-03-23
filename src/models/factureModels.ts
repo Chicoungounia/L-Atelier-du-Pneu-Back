@@ -2,9 +2,10 @@ import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../config/database";
 import { User } from "./userModels";
 import Client from "./clientModel";
-import Produit from "./produitModel";
-import Prestation from "./prestationModels";
 import RendezVous from "./rendezVousModel";
+import FactureProduit from "./factureProduitModel";
+import FacturePrestation from "./facturePrestationModel";
+
 
 interface FactureAttributes {
   id?: number;
@@ -12,20 +13,6 @@ interface FactureAttributes {
   rendezVousId?: number | null;
   userId?: number | null;
   clientId: number;
-  produitId?: number | null;
-  prestationId?: number | null;
-  prix_htva_produit?: number | null;
-  quantite_produit?: number | null;
-  remise_produit?: number | null;
-  total_htva_produit?: number | null;
-  tva_produit?: number | null;
-  total_ttc_produit?: number | null;
-  prix_htva_prestation?: number | null;
-  quantite_prestation?: number | null;
-  remise_prestation?: number | null;
-  total_htva_prestation?: number | null;
-  tva_prestation?: number | null;
-  total_ttc_prestation?: number | null;
   total_htva: number;
   total_remise?: number | null;
   total_tva: number;
@@ -36,9 +23,7 @@ interface FactureAttributes {
   updatedAt?: Date;
 }
 
-
 interface FactureCreationAttributes extends Optional<FactureAttributes, "id"> {}
-
 
 class Facture extends Model<FactureAttributes, FactureCreationAttributes> implements FactureAttributes {
   public id!: number;
@@ -46,20 +31,6 @@ class Facture extends Model<FactureAttributes, FactureCreationAttributes> implem
   public rendezVousId!: number | null;
   public userId!: number | null;
   public clientId!: number;
-  public produitId!: number | null;
-  public prestationId!: number | null;
-  public prix_htva_produit!: number | null;
-  public quantite_produit!: number | null;
-  public remise_produit!: number | null;
-  public total_htva_produit!: number | null;
-  public tva_produit!: number | null;
-  public total_ttc_produit!: number | null;
-  public prix_htva_prestation!: number | null;
-  public quantite_prestation!: number | null;
-  public remise_prestation!: number | null;
-  public total_htva_prestation!: number | null;
-  public tva_prestation!: number | null;
-  public total_ttc_prestation!: number | null;
   public total_htva!: number;
   public total_remise!: number | null;
   public total_tva!: number;
@@ -85,7 +56,7 @@ Facture.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "rendezvous", 
+        model: RendezVous,
         key: "id",
       },
       onDelete: "SET NULL",
@@ -107,84 +78,6 @@ Facture.init(
         key: "id",
       },
       onDelete: "SET NULL",
-    },
-    produitId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: Produit,
-        key: "id",
-      },
-      onDelete: "SET NULL",
-    },
-    prestationId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: Prestation,
-        key: "id",
-      },
-      onDelete: "SET NULL",
-    },
-    prix_htva_produit: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    quantite_produit: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-    },
-    remise_produit: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    total_htva_produit: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    tva_produit: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    total_ttc_produit: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    prix_htva_prestation: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    quantite_prestation: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-    },
-    remise_prestation: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    total_htva_prestation: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    tva_prestation: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
-    },
-    total_ttc_prestation: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-      defaultValue: 0,
     },
     total_htva: {
       type: DataTypes.DECIMAL(10, 2),
@@ -213,7 +106,7 @@ Facture.init(
     },
     mode_payement: {
       type: DataTypes.ENUM("Virement", "Carte bancaire", "Espèces", "Chèque"),
-      allowNull: true,
+      allowNull: false,
       defaultValue: "Carte bancaire",
     },
   },
@@ -229,7 +122,7 @@ Facture.init(
 Facture.belongsTo(RendezVous, { foreignKey: "rendezVousId" });
 Facture.belongsTo(User, { foreignKey: "userId" });
 Facture.belongsTo(Client, { foreignKey: "clientId" });
-Facture.belongsTo(Produit, { foreignKey: "produitId" });
-Facture.belongsTo(Prestation, { foreignKey: "prestationId" });
+Facture.hasMany(FactureProduit, { foreignKey: "factureId", onDelete: "CASCADE" });
+Facture.hasMany(FacturePrestation, { foreignKey: "factureId", onDelete: "CASCADE" });
 
 export default Facture;

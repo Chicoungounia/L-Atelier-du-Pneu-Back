@@ -16,7 +16,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
       indice_vitesse,
       renfort,
       stock,
-      prix,
+      prix_htva,
       image,
     } = req.body;
 
@@ -24,7 +24,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
     if (
       !saison || !marque || !modele || !largeur_pneu || !profil_pneu || 
       !type_pneu || !diametre || !indice_charge || !indice_vitesse || 
-      !renfort || stock === undefined || prix === undefined
+      !renfort || stock === undefined || prix_htva === undefined
     ) {
       res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
       return;
@@ -43,7 +43,7 @@ export const ajouterProduit = async (req: Request, res: Response) => {
       indice_vitesse,
       renfort,
       stock,
-      prix,
+      prix_htva,
       image: image || null, // Permet d'avoir un champ image null par défaut si non fourni
       status: true, // Défini automatiquement sur true
     });
@@ -71,7 +71,7 @@ export const modifierProduit = async (req: Request, res: Response) => {
       indice_vitesse,
       renfort,
       stock,
-      prix,
+      prix_htva,
       image,
       status, // Optionnel, pas obligatoire à taper
     } = req.body;
@@ -104,7 +104,7 @@ export const modifierProduit = async (req: Request, res: Response) => {
       indice_vitesse: indice_vitesse || produit.indice_vitesse,
       renfort: renfort || produit.renfort,
       stock: stock !== undefined ? stock : produit.stock,
-      prix: prix !== undefined ? prix : produit.prix,
+      prix_htva: prix_htva !== undefined ? prix_htva : produit.prix_htva,
       image: image || produit.image,
       status: status !== undefined ? status : produit.status, // Conserve l'ancien status si non fourni
     });

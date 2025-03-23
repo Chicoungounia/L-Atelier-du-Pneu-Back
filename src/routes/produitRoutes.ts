@@ -73,7 +73,7 @@ const router = express.Router();
  *               stock:
  *                 type: integer
  *                 example: 10
- *               prix:
+ *               prix_htva:
  *                 type: number
  *                 format: float
  *                 example: 120.50
@@ -161,7 +161,7 @@ router.post('/ajouter', verifyTokenMiddleware, isAdmin, ajouterProduit);
  *               stock:
  *                 type: integer
  *                 example: 20
- *               prix:
+ *               prix_htva:
  *                 type: number
  *                 format: float
  *                 example: 95.99

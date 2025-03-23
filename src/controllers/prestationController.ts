@@ -5,16 +5,16 @@ import Prestation from "../models/prestationModels";
 
 export const ajouterPrestation = async (req: Request, res: Response) => {
   try {
-    const { travail, description, prix } = req.body;
+    const { travail, description, prix_htva } = req.body;
 
     // Vérification que toutes les données sont présentes
-    if (!travail || !description || prix === undefined) {
+    if (!travail || !description || prix_htva === undefined) {
       res.status(400).json({ message: "Tous les champs sont obligatoires." });
       return;
     }
 
     // Création de la prestation
-    const nouvellePrestation = await Prestation.create({ travail, description, prix });
+    const nouvellePrestation = await Prestation.create({ travail, description, prix_htva });
     res.status(201).json(nouvellePrestation);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de l'ajout de la prestation", error });
@@ -24,7 +24,7 @@ export const ajouterPrestation = async (req: Request, res: Response) => {
 export const modifierPrestation = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { travail, description, prix, status } = req.body;
+    const { travail, description, prix_htva, status } = req.body;
 
     // Vérification que la prestation existe
     const prestation = await Prestation.findByPk(id);
@@ -34,10 +34,10 @@ export const modifierPrestation = async (req: Request, res: Response) => {
     }
 
     // Création d'un objet contenant uniquement les champs fournis
-    const updateData: Partial<{ travail: string; description: string; prix: number; status: boolean }> = {};
+    const updateData: Partial<{ travail: string; description: string; prix_htva: number; status: boolean }> = {};
     if (travail !== undefined) updateData.travail = travail;
     if (description !== undefined) updateData.description = description;
-    if (prix !== undefined) updateData.prix = prix;
+    if (prix_htva !== undefined) updateData.prix_htva = prix_htva;
     if (status !== undefined) updateData.status = status;
 
     // Mise à jour de la prestation avec les champs fournis
