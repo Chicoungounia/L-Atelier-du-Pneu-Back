@@ -336,7 +336,7 @@ router.get("/afficher/all/reserver", verifyTokenMiddleware, afficherAllRendezVou
  *     summary: Récupère tous les rendez-vous d'un client spécifique
  *     description: Retourne la liste des rendez-vous d'un client donné en fonction de son `clientId`.
  *     tags:
- *       - RendezVous
+ *       - Rendez-vous
  *     parameters:
  *       - in: path
  *         name: clientId
