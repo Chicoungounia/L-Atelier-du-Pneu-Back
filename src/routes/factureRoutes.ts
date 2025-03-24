@@ -305,7 +305,6 @@ router.put("/modifier/type/:id", verifyTokenMiddleware, modifierTypeEtPayement)
  */
 router.get("/afficher/:id", verifyTokenMiddleware, afficherUne);
 
-
 /**
  * @swagger
  * /factures/afficher/all/factures:
@@ -451,7 +450,6 @@ router.get("/afficher/type/devis", verifyTokenMiddleware, afficherTypeDevis);
  *         description: Erreur serveur lors de la récupération des factures.
  */
 router.get("/afficher/type/factures", verifyTokenMiddleware, afficherTypeFactures);
-
 
 /**
  * @swagger

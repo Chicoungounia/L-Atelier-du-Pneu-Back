@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { afficherAllRendezVous, afficherAllRendezVousClient, afficherAllRendezVousReserver, ajouterRendezVous, deleteRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
+import { afficherAllRendezVous, afficherAllRendezVousClient, afficherAllRendezVousReserver, afficherRendezVous, ajouterRendezVous, deleteRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
 import { verifyTokenMiddleware } from "../middlewares/verifyTokenMiddleware";
 
 const router = Router();
@@ -218,6 +218,60 @@ router.put("/modifier/:id",verifyTokenMiddleware, modifierRendezVous);
  *         description: Erreur interne du serveur
  */
 router.delete("/delete/:id",verifyTokenMiddleware, deleteRendezVous);
+
+/**
+ * @swagger
+ * /rendezvous/afficher/{id}:
+ *   get:
+ *     summary: Récupérer un rendez-vous par son ID
+ *     description: Permet de récupérer les informations d'un rendez-vous spécifique.
+ *     tags: 
+ *       - Rendez-vous
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du rendez-vous à récupérer
+ *     responses:
+ *       200:
+ *         description: Rendez-vous récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Rendez-vous récupéré avec succès"
+ *                 rendezVous:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     clientId:
+ *                       type: integer
+ *                     userId:
+ *                       type: integer
+ *                     pont:
+ *                       type: integer
+ *                     dateDebut:
+ *                       type: string
+ *                       format: date-time
+ *                     dateFin:
+ *                       type: string
+ *                       format: date-time
+ *                     status:
+ *                       type: string
+ *                       enum: [Réserver, Annuler, Effectuer]
+ *       404:
+ *         description: Rendez-vous non trouvé
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get("/afficher/:id", verifyTokenMiddleware, afficherRendezVous);
+
 /**
  * @swagger
  * /rendezvous/afficher/all:

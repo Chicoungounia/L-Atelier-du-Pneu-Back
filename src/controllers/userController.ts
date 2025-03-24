@@ -125,6 +125,36 @@ export async function modifierRoleUser(req: Request, res: Response) {
     }
 }
 
+export async function afficherUser(req: Request, res: Response) {
+    try {
+        const token = req.cookies?.jwt;
+        if (!token) {
+            res.status(401).json({ message: "Accès refusé, token manquant" });
+            return;
+        }
+
+        const decoded = verifyToken(token);
+        if (!decoded || typeof decoded === "string") {
+            res.status(403).json({ message: "Accès interdit, token invalide" });
+            return;
+        }
+
+        const userId = req.params.id;
+        const user = await User.findByPk(userId, {
+            attributes: { exclude: ["hashedpassword"] },
+        });
+
+        if (!user) {
+            res.status(404).json({ message: "Utilisateur non trouvé" });
+            return;
+        }
+
+        res.status(200).json({ message: "Utilisateur récupéré avec succès", user });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur interne du serveur", error });
+    }
+}
+
 
 export async function afficherAllUsers(req: Request, res: Response) {
     try {

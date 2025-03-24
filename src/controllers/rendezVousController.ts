@@ -173,6 +173,32 @@ export const deleteRendezVous = async (req: Request, res: Response) => {
     }
 };
 
+
+export const afficherRendezVous = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        if (!id || isNaN(Number(id))) {
+            res.status(400).json({ message: "ID du rendez-vous invalide." });
+            return;
+        }
+
+        const rendezVous = await RendezVous.findByPk(id);
+
+        if (!rendezVous) {
+            res.status(404).json({ message: "Rendez-vous non trouvé." });
+            return;
+        }
+
+        res.status(200).json({ message: "Rendez-vous récupéré avec succès", rendezVous });
+        return;
+    } catch (error) {
+        console.error("Erreur lors de la récupération du rendez-vous:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+        return;
+    }
+};
+
 export const afficherAllRendezVous = async (req: Request, res: Response) => {
     try {
       const rendezVous = await RendezVous.findAll();

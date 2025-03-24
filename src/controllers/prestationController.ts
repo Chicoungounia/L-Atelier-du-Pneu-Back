@@ -51,6 +51,62 @@ export const modifierPrestation = async (req: Request, res: Response) => {
   }
 };
 
+export const modifierStatusPrestation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Vérification que l'ID est valide
+    if (isNaN(Number(id))) {
+      res.status(400).json({ message: "ID invalide" });
+      return;
+    }
+
+    // Recherche de la prestation par ID
+    const prestation = await Prestation.findByPk(id);
+
+    if (!prestation) {
+      res.status(404).json({ message: "Prestation non trouvée" });
+      return;
+    }
+
+    // Inversion du statut
+    prestation.status = !prestation.status;
+
+    // Sauvegarde de la modification en base de données
+    await prestation.save();
+
+    res.status(200).json({ message: "Statut de la prestation mis à jour avec succès", prestation });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du statut de la prestation:", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
+export const afficherPrestation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Vérification que l'ID est valide
+    if (isNaN(Number(id))) {
+      res.status(400).json({ message: "ID invalide" });
+      return;
+    }
+
+    // Recherche de la prestation par ID
+    const prestation = await Prestation.findByPk(id);
+
+    if (!prestation) {
+      res.status(404).json({ message: "Prestation non trouvée" });
+      return;
+    }
+
+    res.status(200).json({ message: "Prestation récupérée avec succès", prestation });
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la prestation:", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
 
 export const afficherStatusAllTruePrestation = async (req: Request, res: Response) => {
   try {

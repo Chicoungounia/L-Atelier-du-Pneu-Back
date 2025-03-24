@@ -1,5 +1,5 @@
 import express from 'express';
-import { afficherAllProduit, afficherAllTrueProduit, ajouterProduit, modifierProduit } from '../controllers/produitController';
+import { afficherAllProduit, afficherAllTrueProduit, afficherProduit, ajouterProduit, modifierProduit, modifierStatusProduit } from '../controllers/produitController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
@@ -197,6 +197,128 @@ router.put('/modifier/:id', verifyTokenMiddleware, isAdmin, modifierProduit);
 
 /**
  * @swagger
+ * /produits/modifier/status/{id}:
+ *   put:
+ *     summary: Inverser le statut d'un produit
+ *     description: Change le statut d'un produit de `true` à `false` ou inversement.
+ *     tags:
+ *       - Produits
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID du produit à mettre à jour
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Statut du produit modifié avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Statut du produit mis à jour avec succès"
+ *                 produit:
+ *                   $ref: "#/components/schemas/Produit"
+ *       400:
+ *         description: ID invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "ID invalide"
+ *       404:
+ *         description: Produit non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Produit non trouvé"
+ *       500:
+ *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erreur interne du serveur"
+ */
+router.put('/modifier/status/:id', verifyTokenMiddleware, isAdmin, modifierStatusProduit);
+
+/**
+ * @swagger
+ * /produits/afficher/{id}:
+ *   get:
+ *     summary: Récupérer un produit par son ID
+ *     description: Renvoie les détails d'un produit en fonction de son ID.
+ *     tags:
+ *       - Produits
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID du produit à récupérer
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Produit récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Produit récupéré avec succès"
+ *                 produit:
+ *                   $ref: "#/components/schemas/Produit"
+ *       400:
+ *         description: ID invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "ID invalide"
+ *       404:
+ *         description: Produit non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Produit non trouvé"
+ *       500:
+ *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erreur interne du serveur"
+ */
+router.get('/afficher/:id',verifyTokenMiddleware, afficherProduit);
+
+/**
+ * @swagger
  * /produits/afficher/true:
  *   get:
  *     summary: Récupérer tous les produits actifs
@@ -237,7 +359,7 @@ router.get('/afficher/true',verifyTokenMiddleware, afficherAllTrueProduit);
  *       500:
  *         description: Erreur interne du serveur.
  */
-router.get('/afficher/all',verifyTokenMiddleware, isAdmin, afficherAllProduit);
+router.get('/afficher/all',verifyTokenMiddleware, afficherAllProduit);
 
 
 

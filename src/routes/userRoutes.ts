@@ -1,5 +1,5 @@
 import express from 'express';
-import { modifierUser, modifierStatusUser, modifierRoleUser, afficherAllUsers, afficherUsersActif } from '../controllers/userController'; // Importation des contrôleurs pour register et login
+import { modifierUser, modifierStatusUser, modifierRoleUser, afficherAllUsers, afficherUsersActif, afficherUser } from '../controllers/userController'; // Importation des contrôleurs pour register et login
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
@@ -178,6 +178,62 @@ router.put("/modifier/role/:id",verifyTokenMiddleware, isAdmin, modifierRoleUser
 
 /**
  * @swagger
+ * /users/afficher/{id}:
+ *   get:
+ *     summary: Récupérer un utilisateur par son ID
+ *     description: Permet de récupérer les informations d'un utilisateur spécifique en excluant son mot de passe. L'accès est restreint aux utilisateurs authentifiés.
+ *     tags: 
+ *       - Utilisateurs
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de l'utilisateur à récupérer
+ *     responses:
+ *       200:
+ *         description: Utilisateur récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Utilisateur récupéré avec succès"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     nom:
+ *                       type: string
+ *                     prenom:
+ *                       type: string
+ *                     speudo:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [Admin, Ouvrier, Employé]
+ *                     status:
+ *                       type: string
+ *                       enum: [Actif, Inactif]
+ *       401:
+ *         description: Accès refusé, token manquant
+ *       403:
+ *         description: Accès interdit, token invalide
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get("/afficher/:id", verifyTokenMiddleware, afficherUser )
+
+/**
+ * @swagger
  * /users/afficher/all:
  *   get:
  *     summary: Récupérer tous les utilisateurs
@@ -286,6 +342,6 @@ router.get("/afficher/all", verifyTokenMiddleware, afficherAllUsers )
  *       500:
  *         description: Erreur interne du serveur
  */
-router.get("/afficher/actifs", afficherUsersActif);
+router.get("/afficher/actifs", verifyTokenMiddleware, afficherUsersActif);
 
 export default router;

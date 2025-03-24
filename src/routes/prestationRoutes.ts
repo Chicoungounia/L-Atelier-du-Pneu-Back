@@ -1,5 +1,5 @@
 import express from 'express';
-import { afficherAllPrestations, afficherStatusAllTruePrestation, ajouterPrestation, modifierPrestation } from '../controllers/prestationController';
+import { afficherAllPrestations, afficherPrestation, afficherStatusAllTruePrestation, ajouterPrestation, modifierPrestation, modifierStatusPrestation } from '../controllers/prestationController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
@@ -125,7 +125,129 @@ router.put("/modifier/:id",verifyTokenMiddleware, isAdmin, modifierPrestation);
 
 /**
  * @swagger
- * /prestations/affichet/status/true:
+ * /prestation/modifier/status/{id}:
+ *   put:
+ *     summary: Inverser le statut d'une prestation
+ *     description: Change le statut d'une prestation de `true` à `false` ou inversement.
+ *     tags:
+ *       - Prestations
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID de la prestation à mettre à jour
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Statut de la prestation modifié avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Statut de la prestation mis à jour avec succès"
+ *                 prestation:
+ *                   $ref: "#/components/schemas/Prestation"
+ *       400:
+ *         description: ID invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "ID invalide"
+ *       404:
+ *         description: Prestation non trouvée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Prestation non trouvée"
+ *       500:
+ *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erreur interne du serveur"
+ */
+router.put("/modifier/status/:id",verifyTokenMiddleware, isAdmin, modifierStatusPrestation);
+
+/**
+ * @swagger
+ * /prestation/afficher/{id}:
+ *   get:
+ *     summary: Récupérer une prestation par son ID
+ *     description: Retourne les détails d'une prestation spécifique.
+ *     tags:
+ *       - Prestations
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID de la prestation à récupérer
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Prestation récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Prestation récupérée avec succès"
+ *                 prestation:
+ *                   $ref: "#/components/schemas/Prestation"
+ *       400:
+ *         description: ID invalide
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "ID invalide"
+ *       404:
+ *         description: Prestation non trouvée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Prestation non trouvée"
+ *       500:
+ *         description: Erreur interne du serveur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erreur interne du serveur"
+ */
+router.get("/afficher/:id",verifyTokenMiddleware, afficherPrestation);
+
+/**
+ * @swagger
+ * /prestations/afficher/status/true:
  *   get:
  *     summary: Récupérer toutes les prestations actives
  *     description: Retourne la liste des prestations ayant un statut actif (status = true).
@@ -166,7 +288,7 @@ router.put("/modifier/:id",verifyTokenMiddleware, isAdmin, modifierPrestation);
  *       500:
  *         description: Erreur serveur lors de la récupération des prestations actives.
  */
-router.get("/affichet/status/true", afficherStatusAllTruePrestation);
+router.get("/afficher/status/true",verifyTokenMiddleware, afficherStatusAllTruePrestation);
 
 /**
  * @swagger
@@ -210,7 +332,7 @@ router.get("/affichet/status/true", afficherStatusAllTruePrestation);
  *       500:
  *         description: Erreur interne du serveur.
  */
-router.get("/afficher/all", verifyTokenMiddleware, isAdmin, afficherAllPrestations)
+router.get("/afficher/all", verifyTokenMiddleware, afficherAllPrestations)
 
 
 

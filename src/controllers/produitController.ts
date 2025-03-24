@@ -116,6 +116,37 @@ export const modifierProduit = async (req: Request, res: Response) => {
   }
 };
 
+export const modifierStatusProduit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Vérification que l'ID est valide
+    if (isNaN(Number(id))) {
+      res.status(400).json({ message: "ID invalide" });
+      return;
+    }
+
+    // Recherche du produit par ID
+    const produit = await Produit.findByPk(id);
+
+    if (!produit) {
+      res.status(404).json({ message: "Produit non trouvé" });
+      return;
+    }
+
+    // Inversion du statut
+    produit.status = !produit.status;
+
+    // Mise à jour dans la base de données
+    await produit.save();
+
+    res.status(200).json({ message: "Statut du produit mis à jour avec succès", produit });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du statut du produit:", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
 
 export const afficherAllTrueProduit = async (req: Request, res: Response) => {
   try {
@@ -129,6 +160,31 @@ export const afficherAllTrueProduit = async (req: Request, res: Response) => {
     console.error("Erreur lors de la récupération des produits actifs:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
     return;
+  }
+};
+
+export const afficherProduit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Vérification que l'ID est valide
+    if (isNaN(Number(id))) {
+      res.status(400).json({ message: "ID invalide" });
+      return;
+    }
+
+    // Recherche du produit par ID
+    const produit = await Produit.findByPk(id);
+
+    if (!produit) {
+      res.status(404).json({ message: "Produit non trouvé" });
+      return;
+    }
+
+    res.status(200).json({ message: "Produit récupéré avec succès", produit });
+  } catch (error) {
+    console.error("Erreur lors de la récupération du produit:", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
 
