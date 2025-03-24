@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { afficherAllRendezVous, afficherAllRendezVousClient, afficherAllRendezVousReserver, afficherRendezVous, ajouterRendezVous, deleteRendezVous, modifierRendezVous } from "../controllers/rendezVousController";
+import { afficherAllRendezVous, afficherAllRendezVousClient, afficherAllRendezVousReserver, afficherRendezVous, ajouterRendezVous, deleteRendezVous, modifierRendezVous, searchRendezVous } from "../controllers/rendezVousController";
 import { verifyTokenMiddleware } from "../middlewares/verifyTokenMiddleware";
 
 const router = Router();
@@ -446,5 +446,59 @@ router.get("/afficher/all/reserver", verifyTokenMiddleware, afficherAllRendezVou
  *         description: Erreur interne du serveur.
  */
 router.get("/afficher/:clientId", verifyTokenMiddleware, afficherAllRendezVousClient);
+
+/**
+ * @swagger
+ * /rendezvous/recherche:
+ *   get:
+ *     summary: Recherche des rendez-vous avec des filtres optionnels.
+ *     description: Retourne une liste de rendez-vous en fonction des filtres fournis. Affiche les dates et le statut du rendez-vous sans possibilité de filtrage sur ces champs.
+ *     tags:
+ *       - Rendez-vous
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: ID du rendez-vous (optionnel).
+ *       - in: query
+ *         name: clientId
+ *         schema:
+ *           type: integer
+ *         description: ID du client (optionnel).
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: integer
+ *         description: ID de l'ouvrier (optionnel).
+ *     responses:
+ *       200:
+ *         description: Liste des rendez-vous récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   clientId:
+ *                     type: integer
+ *                   userId:
+ *                     type: integer
+ *                   dateDebut:
+ *                     type: string
+ *                     format: date-time
+ *                   dateFin:
+ *                     type: string
+ *                     format: date-time
+ *                   status:
+ *                     type: string
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get("/recherche/", verifyTokenMiddleware, searchRendezVous);
+
 
 export default router;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { afficherAllClients, afficherClientsActifs, afficherUnClient, ajouterClient, modifierClient, modifierStatusClient } from '../controllers/clientController';
+import { afficherAllClients, afficherClientsActifs, afficherUnClient, ajouterClient, modifierClient, modifierStatusClient, searchClient } from '../controllers/clientController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 
 const router = express.Router();
@@ -315,6 +315,81 @@ router.get('/afficher/all', verifyTokenMiddleware, afficherAllClients);
  *                   example: Erreur interne du serveur
  */
 router.get('/afficher/:id', verifyTokenMiddleware, afficherUnClient);
+
+/**
+ * @swagger
+ * /clients/recherche:
+ *   get:
+ *     summary: Recherche des clients avec filtres dynamiques
+ *     description: Permet de rechercher des clients en fonction de leur ID, nom, prénom, email, téléphone ou type.
+ *     tags:
+ *       - Clients
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: ID unique du client
+ *       - in: query
+ *         name: nom
+ *         schema:
+ *           type: string
+ *         description: Nom du client (recherche partielle)
+ *       - in: query
+ *         name: prenom
+ *         schema:
+ *           type: string
+ *         description: Prénom du client (recherche partielle)
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: Email du client (recherche partielle)
+ *       - in: query
+ *         name: telephone
+ *         schema:
+ *           type: string
+ *         description: Téléphone du client (recherche partielle)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: ["Privé", "Professionnel"]
+ *         description: Type du client (Privé ou Professionnel)
+ *     responses:
+ *       200:
+ *         description: Liste des clients correspondant aux critères
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   nom:
+ *                     type: string
+ *                     example: "Dupont"
+ *                   prenom:
+ *                     type: string
+ *                     example: "Jean"
+ *                   email:
+ *                     type: string
+ *                     example: "jean.dupont@example.com"
+ *                   telephone:
+ *                     type: string
+ *                     example: "+33612345678"
+ *                   type:
+ *                     type: string
+ *                     example: "Privé"
+ *       400:
+ *         description: Requête invalide
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get('/recherche', verifyTokenMiddleware, searchClient);
 
 
 export default router;

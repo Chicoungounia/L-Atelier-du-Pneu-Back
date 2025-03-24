@@ -1,5 +1,5 @@
 import express from 'express';
-import { modifierUser, modifierStatusUser, modifierRoleUser, afficherAllUsers, afficherUsersActif, afficherUser } from '../controllers/userController'; // Importation des contrôleurs pour register et login
+import { modifierUser, modifierStatusUser, modifierRoleUser, afficherAllUsers, afficherUsersActif, afficherUser, searchUsers } from '../controllers/userController'; // Importation des contrôleurs pour register et login
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
@@ -343,5 +343,62 @@ router.get("/afficher/all", verifyTokenMiddleware, afficherAllUsers )
  *         description: Erreur interne du serveur
  */
 router.get("/afficher/actifs", verifyTokenMiddleware, afficherUsersActif);
+
+/**
+ * @swagger
+ * /users/recherche:
+ *   get:
+ *     summary: Recherche des utilisateurs avec des filtres optionnels.
+ *     description: Permet de rechercher des utilisateurs par ID, nom, prénom ou email.
+ *     tags:
+ *       - Utilisateurs
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: ID de l'utilisateur recherché.
+ *       - in: query
+ *         name: nom
+ *         schema:
+ *           type: string
+ *         description: Recherche par nom (partielle et insensible à la casse).
+ *       - in: query
+ *         name: prenom
+ *         schema:
+ *           type: string
+ *         description: Recherche par prénom (partielle et insensible à la casse).
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: Recherche par email (partielle et insensible à la casse).
+ *     responses:
+ *       200:
+ *         description: Liste des utilisateurs correspondant aux filtres.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   nom:
+ *                     type: string
+ *                     example: Dupont
+ *                   prenom:
+ *                     type: string
+ *                     example: Jean
+ *                   email:
+ *                     type: string
+ *                     example: jean.dupont@example.com
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get("/recherche", verifyTokenMiddleware, searchUsers);
+
 
 export default router;

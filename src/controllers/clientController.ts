@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Client from "../models/clientModel";
 import { ValidationError } from "sequelize";
 import { verifyTokenMiddleware } from "../middlewares/verifyTokenMiddleware";
+import sequelize from "../config/database";
 
 export const ajouterClient = [verifyTokenMiddleware, async (req: Request, res: Response) => {
   try {
@@ -192,4 +193,47 @@ export const afficherUnClient = [verifyTokenMiddleware, async (req: Request, res
 }];
 
 
+export async function searchClient(req: Request, res: Response) {
+  try {
+    const { id, nom, prenom, email, telephone, type } = req.query;
 
+    // Construction de la requête SQL dynamique
+    const query = `
+      SELECT id, nom, prenom, email, telephone, type
+      FROM clients
+      WHERE
+      (:id IS NULL OR id = :id) AND
+      (:nom IS NULL OR nom ILIKE :nom) AND
+      (:prenom IS NULL OR prenom ILIKE :prenom) AND
+      (:email IS NULL OR email ILIKE :email) AND
+      (:telephone IS NULL OR telephone ILIKE :telephone) AND
+      (:type IS NULL OR type = :type)
+      ORDER BY nom ASC;
+    `;
+
+    // Création des valeurs à remplacer dans la requête
+    const replacements: any = {
+      id: id ? Number(id) : null,
+      nom: nom ? `%${nom}%` : null, // Recherche partielle sur le nom
+      prenom: prenom ? `%${prenom}%` : null, // Recherche partielle sur le prénom
+      email: email ? `%${email}%` : null, // Recherche partielle sur l'email
+      telephone: telephone ? `%${telephone}%` : null, // Recherche partielle sur le téléphone
+      type: type || null, // "Privé" ou "Professionnel"
+    };
+
+    console.log("Requête SQL générée :", query);
+    console.log("Valeurs des paramètres :", replacements);
+
+    // Exécution sécurisée avec Sequelize
+    const clients = await sequelize.query(query, {
+      replacements,
+      type: "SELECT",
+      raw: true,
+    });
+
+    res.json(clients);
+  } catch (error: any) {
+    console.error("Erreur lors de la recherche :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+}

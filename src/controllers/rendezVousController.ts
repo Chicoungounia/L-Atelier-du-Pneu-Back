@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { Request, Response } from "express";
 import RendezVous from "../models/rendezVousModel";
 import { User } from "../models/userModels";
+import sequelize from "../config/database";
 
 export const ajouterRendezVous = async (req: Request, res: Response) => {
     try {
@@ -252,3 +253,38 @@ export const afficherAllRendezVous = async (req: Request, res: Response) => {
       return;
     }
   };
+
+
+  export async function searchRendezVous(req: Request, res: Response) {
+    try {
+        const { id, clientId, userId } = req.query;
+
+        // Requête SQL sans filtre sur dateDebut et dateFin, avec affichage du status
+        const query = `
+        SELECT id, "clientId", "userId", "dateDebut", "dateFin", status
+        FROM rendezvous
+        WHERE
+        (:id IS NULL OR id = :id) AND
+        (:clientId IS NULL OR "clientId" = :clientId) AND
+        (:userId IS NULL OR "userId" = :userId)
+        ORDER BY "dateDebut" ASC;
+        `;
+
+        // Exécution sécurisée avec les valeurs des paramètres
+        const rendezVous = await sequelize.query(query, {
+            replacements: {
+                id: id ? Number(id) : null,
+                clientId: clientId ? Number(clientId) : null,
+                userId: userId ? Number(userId) : null,
+            },
+            type: "SELECT",
+            raw: true
+        });
+
+        res.json(rendezVous);
+    } catch (error: any) {
+        console.error("Erreur lors de la recherche des rendez-vous :", error);
+        res.status(500).json({ message: "Une erreur est survenue lors de la récupération des rendez-vous." });
+    }
+}
+

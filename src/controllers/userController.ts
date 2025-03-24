@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { verifyToken } from '../utilis/JWTUtils';
 import { User } from '../models/userModels';
+import sequelize from '../config/database';
 
 
 export async function modifierUser(req: Request, res: Response) {
@@ -210,7 +211,39 @@ export async function afficherUsersActif(req: Request, res: Response) {
     }
 }
 
+export async function searchUsers(req: Request, res: Response) {
+    try {
+        const { id, nom, prenom, email } = req.query;
 
+        // Création d'une requête SQL dynamique avec filtres optionnels
+        const query = `
+        SELECT id, nom, prenom, email
+        FROM users
+        WHERE
+        (:id IS NULL OR id = :id) AND
+        (:nom IS NULL OR nom ILIKE :nom) AND
+        (:prenom IS NULL OR prenom ILIKE :prenom) AND
+        (:email IS NULL OR email ILIKE :email)
+        ORDER BY nom ASC;
+        `;
+
+        // Exécution sécurisée avec les valeurs des paramètres
+        const utilisateurs = await sequelize.query(query, {
+            replacements: {
+                id: id ? Number(id) : null,
+                nom: nom ? `%${nom}%` : null,
+                prenom: prenom ? `%${prenom}%` : null,
+                email: email ? `%${email}%` : null,
+            },
+            type: "SELECT"
+        });
+
+        res.json(utilisateurs);
+    } catch (error: any) {
+        console.error("Erreur lors de la recherche :", error);
+        res.status(500).json({ message: error.message });
+    }
+}
 
 
 

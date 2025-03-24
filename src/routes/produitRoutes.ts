@@ -1,5 +1,5 @@
 import express from 'express';
-import { afficherAllProduit, afficherAllTrueProduit, afficherProduit, ajouterProduit, modifierProduit, modifierStatusProduit } from '../controllers/produitController';
+import { afficherAllProduit, afficherAllTrueProduit, afficherProduit, ajouterProduit, modifierProduit, modifierStatusProduit, searchProduit } from '../controllers/produitController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
@@ -315,7 +315,7 @@ router.put('/modifier/status/:id', verifyTokenMiddleware, isAdmin, modifierStatu
  *                   type: string
  *                   example: "Erreur interne du serveur"
  */
-router.get('/afficher/:id',verifyTokenMiddleware, afficherProduit);
+router.get('/afficher/:id', verifyTokenMiddleware, afficherProduit);
 
 /**
  * @swagger
@@ -337,7 +337,7 @@ router.get('/afficher/:id',verifyTokenMiddleware, afficherProduit);
  *       500:
  *         description: Erreur interne du serveur.
  */
-router.get('/afficher/true',verifyTokenMiddleware, afficherAllTrueProduit);
+router.get('/afficher/true', verifyTokenMiddleware, afficherAllTrueProduit);
 
 /**
  * @swagger
@@ -359,8 +359,76 @@ router.get('/afficher/true',verifyTokenMiddleware, afficherAllTrueProduit);
  *       500:
  *         description: Erreur interne du serveur.
  */
-router.get('/afficher/all',verifyTokenMiddleware, afficherAllProduit);
+router.get('/afficher/all', verifyTokenMiddleware, afficherAllProduit);
 
+/**
+ * @swagger
+ * /produits/recherche:
+ *   get:
+ *     summary: Recherche des produits avec plusieurs filtres
+ *     description: Permet de rechercher un produit par ID, saison, marque, ou par modèle+largeur_pneu+diamètre sous le format '225/45/16'.
+ *     tags:
+ *       - Produits
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: ID du produit
+ *       - in: query
+ *         name: saison
+ *         schema:
+ *           type: string
+ *           enum: [été, hiver, 4_saisons]
+ *         description: Saison du pneu
+ *       - in: query
+ *         name: marque
+ *         schema:
+ *           type: string
+ *           enum: [Michelin, Bridgestone, Hankook, Goodyear]
+ *         description: Marque du pneu
+ *       - in: query
+ *         name: reference
+ *         schema:
+ *           type: string
+ *           example: "225/45/16"
+ *         description: Référence combinée (largeur_pneu/profil_pneu/diamètre)
+ *     responses:
+ *       200:
+ *         description: Liste des produits correspondant aux critères de recherche
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   saison:
+ *                     type: string
+ *                   marque:
+ *                     type: string
+ *                   modele:
+ *                     type: string
+ *                   largeur_pneu:
+ *                     type: integer
+ *                   profil_pneu:
+ *                     type: integer
+ *                   diametre:
+ *                     type: integer
+ *                   prix_htva:
+ *                     type: number
+ *                   stock:
+ *                     type: integer
+ *                   status:
+ *                     type: boolean
+ *       400:
+ *         description: Format de référence invalide ou ID incorrect
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get('/recherche', verifyTokenMiddleware, searchProduit);
 
 
 export default router;

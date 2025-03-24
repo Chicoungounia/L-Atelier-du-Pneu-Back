@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Produit from "../models/produitModel";
+import sequelize from "../config/database";
 
 // Ajouter un produit avec status par défaut à true
 export const ajouterProduit = async (req: Request, res: Response) => {
@@ -201,3 +202,56 @@ export const afficherAllProduit = async (req: Request, res: Response) => {
     return;
   }
 };
+
+
+export async function searchProduit(req: Request, res: Response) { 
+  try {
+      const { id, saison, marque, reference } = req.query;
+
+      let query = `
+      SELECT id, saison, marque, modele, largeur_pneu, profil_pneu, diametre, prix_htva, stock, status
+      FROM produits
+      WHERE 
+      (COALESCE(:id, id) = id) 
+      AND (COALESCE(:saison, saison) = saison) 
+      AND (COALESCE(:marque, marque) = marque)
+      `;
+
+      const replacements: any = {
+          id: id ? Number(id) : null,
+          saison: saison || null,
+          marque: marque || null,
+      };
+
+      // Si la référence (225/45/16) est fournie, on l'extrait et on adapte la requête
+      if (reference) {
+          const regex = /^(\d{3})\/(\d{2})\/(\d{2})$/;
+          const match = typeof reference === 'string' ? reference.match(regex) : null;
+          
+          if (match) {
+              const [_, largeur_pneu, profil_pneu, diametre] = match;
+              query += ` AND largeur_pneu = :largeur_pneu AND profil_pneu = :profil_pneu AND diametre = :diametre`;
+              replacements.largeur_pneu = Number(largeur_pneu);
+              replacements.profil_pneu = Number(profil_pneu);
+              replacements.diametre = Number(diametre);
+          } else {
+              res.status(400).json({ message: "Format de référence invalide. Utiliser '225/45/16'." });
+              return;
+          }
+      }
+
+      query += ` ORDER BY modele ASC;`;
+
+      // Exécution sécurisée avec Sequelize
+      const produits = await sequelize.query(query, {
+          replacements,
+          type: "SELECT",
+          raw: true
+      });
+
+      res.json(produits);
+  } catch (error: any) {
+      console.error("Erreur lors de la recherche des produits:", error);
+      res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+}
