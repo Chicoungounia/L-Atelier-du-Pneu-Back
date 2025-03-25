@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { ajouterFacture, modifierFacture, modifierTypeEtPayement, afficherTypeFactures, afficherAllFactures, afficherUne, afficherTypeDevis, afficherAllApayer, sommeTotalFactureParMois, sommeTotalFactureParAn, sommeTotalFactureParJour } from "../controllers/factureController";
+import { ajouterFacture, modifierFacture, modifierTypeEtPayement, afficherTypeFactures, afficherAllFactures, afficherUne, afficherTypeDevis, afficherAllApayer, sommeTotalFactureParMois, sommeTotalFactureParAn, sommeTotalFactureParJour, searchChiffreAffaire, searchPeriodeChiffreAffaire } from "../controllers/factureController";
 import { verifyTokenMiddleware } from "../middlewares/verifyTokenMiddleware";
+import { isAdmin } from "../middlewares/verifyAdminMiddleware";
 
 const router = Router();
 
@@ -485,46 +486,58 @@ router.get("/afficher/type/factures", verifyTokenMiddleware, afficherTypeFacture
  */
 router.get("/afficher/all/apayer", verifyTokenMiddleware, afficherAllApayer);
 
-/**
- * @swagger
- * /factures/afficher/total/par/jour:
- *   get:
- *     summary: Récupère la somme totale des factures pour un jour donné
- *     description: Retourne le total des factures pour une journée spécifique
- *     tags:
- *       - Dashboard
- *     parameters:
- *       - in: query
- *         name: jour
- *         schema:
- *           type: string
- *         description: Jour au format YYYY-MM-DD
- *     responses:
- *       200:
- *         description: Succès
- *       500:
- *         description: Erreur serveur
- */
-router.get("/afficher/total/par/jour", sommeTotalFactureParJour);
+
+
 
 /**
  * @swagger
- * /factures/afficher/total/par/mois:
+ * /factures/afficher/jour/ca:
  *   get:
- *     summary: Calcule la somme totale des factures sur une période d'un mois
- *     description: Retourne le total des factures pour un mois donné ou le mois en cours si non précisé.
+ *     summary: Récupère le total des factures du jour en cours.
+ *     description: Cette route calcule la somme totale des factures générées aujourd'hui. Elle ne permet pas de rechercher une autre date.
  *     tags:
  *       - Dashboard
- *     parameters:
- *       - in: query
- *         name: mois
- *         schema:
- *           type: string
- *           example: "2025-03"
- *         description: Le mois au format "YYYY-MM" pour lequel récupérer la somme totale des factures.
  *     responses:
  *       200:
- *         description: Retourne le total des factures pour le mois spécifié.
+ *         description: Le total des factures du jour en cours.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 jour:
+ *                   type: string
+ *                   description: La date du jour au format `DD-MM-YYYY`.
+ *                   example: "25-03-2025"
+ *                 total:
+ *                   type: number
+ *                   description: La somme totale des factures du jour.
+ *                   example: 2500.50
+ *       500:
+ *         description: Erreur interne du serveur.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Message d'erreur générique en cas de problème serveur.
+ *                   example: "Erreur interne du serveur"
+ */
+router.get("/afficher/jour/ca", verifyTokenMiddleware, sommeTotalFactureParJour);
+
+/**
+ * @swagger
+ * /factures/afficher/mois/ca:
+ *   get:
+ *     summary: Récupère la somme totale des factures du mois en cours.
+ *     description: Cette route retourne le total des factures pour le mois en cours, sans possibilité de sélectionner un autre mois.
+ *     tags:
+ *       - Dashboard
+ *     responses:
+ *       200:
+ *         description: La somme totale des factures pour le mois en cours.
  *         content:
  *           application/json:
  *             schema:
@@ -532,41 +545,180 @@ router.get("/afficher/total/par/jour", sommeTotalFactureParJour);
  *               properties:
  *                 mois:
  *                   type: string
- *                   example: "2025-03"
+ *                   description: Le mois en cours au format MM-YYYY.
+ *                   example: "03-2025"
  *                 total:
  *                   type: number
- *                   example: 5000.75
+ *                   description: La somme totale des factures du mois en cours.
+ *                   example: 25000.50
  *       500:
- *         description: Erreur serveur lors du calcul du total des factures.
+ *         description: Erreur interne du serveur.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Message d'erreur en cas de problème serveur.
+ *                   example: "Erreur interne du serveur"
  */
-router.get("/afficher/total/par/mois", sommeTotalFactureParMois);
+router.get("/afficher/mois/ca", verifyTokenMiddleware, sommeTotalFactureParMois);
 
 /**
  * @swagger
- * /factures/afficher/total/par/annee:
- *   get:
- *     summary: Récupère la somme totale des factures pour une année donnée
- *     description: Retourne le total des factures pour une année complète 
+* /factures/afficher/annee/ca:
+*   get:
+*     summary: Récupère la somme totale des factures de l'année en cours.
+*     description: Cette route retourne le total des factures pour l'année en cours sans possibilité de sélectionner une autre année.
 *     tags:
+*       - Dashboard
+*     responses:
+*       200:
+*         description: La somme totale des factures pour l'année en cours.
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 annee:
+*                   type: number
+*                   description: L'année en cours.
+*                   example: 2025
+*                 total:
+*                   type: number
+*                   description: La somme totale des factures de l'année en cours.
+*                   example: 150000.75
+*       500:
+*         description: Erreur interne du serveur.
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                   description: Message d'erreur en cas de problème serveur.
+*                   example: "Erreur interne du serveur"
+*/
+router.get("/afficher/annee/ca", verifyTokenMiddleware, sommeTotalFactureParAn);
+
+/**
+ * @swagger
+ * /factures/recherche/momment/ca:
+ *   get:
+ *     summary: Récupère les totaux des factures pour un jour, un mois ou une année spécifiée
+ *     description: Calcule le total des factures en fonction des critères de date.
+ *     tags:
  *       - Dashboard
  *     parameters:
  *       - in: query
- *         name: annee
+ *         name: jour
+ *         required: false
  *         schema:
  *           type: string
- *         description: Année au format YYYY
+ *           example: "2025-03-25"
+ *         description: La date spécifique pour laquelle récupérer les factures.
+ *       - in: query
+ *         name: mois
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "2025-03"
+ *         description: Le mois spécifique pour lequel récupérer les factures.
+ *       - in: query
+ *         name: annee
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "2025"
+ *         description: L'année spécifique pour laquelle récupérer les factures.
  *     responses:
  *       200:
- *         description: Succès
+ *         description: Totaux des factures calculés avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalJour:
+ *                   type: number
+ *                   example: 1000
+ *                 totalMois:
+ *                   type: number
+ *                   example: 5000
+ *                 totalAn:
+ *                   type: number
+ *                   example: 60000
+ *       400:
+ *         description: Erreur de validation des paramètres de date.
  *       500:
- *         description: Erreur serveur
+ *         description: Erreur interne du serveur.
  */
-router.get("/afficher/total/par/annee", sommeTotalFactureParAn);
+router.get("/recherche/moment/ca", verifyTokenMiddleware, isAdmin, searchChiffreAffaire)
+
+/**
+ * @swagger
+ * /factures/recherche/periode/ca:
+ *   get:
+ *     summary: Récupère le total des factures entre deux dates spécifiées.
+ *     description: Cette route permet de calculer le total des factures entre deux dates spécifiées dans les paramètres `dateDebut` et `dateFin`. La date de début ne peut pas être dans le futur.
+ *     tags:
+ *       - Dashboard
+ *     parameters:
+ *       - in: query
+ *         name: dateDebut
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: La date de début de la période, formatée en `YYYY-MM-DD`. La date de début ne peut pas être dans le futur.
+ *       - in: query
+ *         name: dateFin
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: La date de fin de la période, formatée en `YYYY-MM-DD`.
+ *     responses:
+ *       200:
+ *         description: Le total des factures pour la période spécifiée.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalFacture:
+ *                   type: number
+ *                   description: Le total des factures pour la période spécifiée.
+ *                   example: 1500.00
+ *       400:
+ *         description: Paramètres manquants ou invalides (dates non spécifiées, dates mal formatées, date de fin avant la date de début, ou date de début dans le futur).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Message d'erreur détaillant le problème.
+ *                   example: "La date de début ne peut pas être dans le futur."
+ *       500:
+ *         description: Erreur interne du serveur.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Message d'erreur générique en cas de problème serveur.
+ *                   example: "Erreur interne du serveur"
+ */
+router.get("/recherche/periode/ca", verifyTokenMiddleware, isAdmin, searchPeriodeChiffreAffaire)
 
 
 
 
-
-  
 
 export default router;

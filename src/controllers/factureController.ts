@@ -432,76 +432,43 @@ export const afficherAllApayer = async (req: Request, res: Response) => {
 
 export const sommeTotalFactureParJour = async (req: Request, res: Response) => {
   try {
-    const { jour } = req.query; // Format attendu : "YYYY-MM-DD"
-
-    if (typeof jour !== "string") {
-      res.status(400).json({ message: "Le paramètre 'jour' est requis et doit être au format YYYY-MM-DD" });
-      return;
-    }
-
-    const dateDebut = new Date(jour);
-    if (isNaN(dateDebut.getTime())) {
-      res.status(400).json({ message: "Le format de la date est invalide. Utilisez YYYY-MM-DD." });
-      return;
-    }
-
-    // Vérification que la date n'est pas dans le futur
+    // Récupérer la date actuelle (au format YYYY-MM-DD)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (dateDebut > today) {
-      res.status(400).json({ message: "Vous ne pouvez pas demander des factures pour un jour futur." });
-      return;
-    }
-
-    dateDebut.setHours(0, 0, 0, 0);
-    const dateFin = new Date(dateDebut);
+    const dateFin = new Date(today);
     dateFin.setHours(23, 59, 59, 999);
 
+    // Calcul de la somme totale des factures du jour en cours
     const totalFactures = await Facture.sum("total", {
       where: {
         type: "Facture",
         createdAt: {
-          [Op.between]: [dateDebut, dateFin],
+          [Op.between]: [today, dateFin],
         },
       },
     });
 
-    // Format français DD-MM-YYYY
-    const dateFormatee = `${dateDebut.getDate().toString().padStart(2, "0")}-${(dateDebut.getMonth() + 1).toString().padStart(2, "0")}-${dateDebut.getFullYear()}`;
+    // Format français DD-MM-YYYY pour l'affichage
+    const dateFormatee = `${today.getDate().toString().padStart(2, "0")}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getFullYear()}`;
 
     res.json({ jour: dateFormatee, total: totalFactures || 0 });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors du calcul du total des factures du jour", error });
+    console.error("Erreur lors du calcul du total des factures du jour :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
 
 export const sommeTotalFactureParMois = async (req: Request, res: Response) => {
   try {
-    const { mois } = req.query; // Format attendu : "YYYY-MM"
-
-    if (typeof mois !== "string" || !/^\d{4}-\d{2}$/.test(mois)) {
-      res.status(400).json({ message: "Le paramètre 'mois' est requis et doit être au format YYYY-MM" });
-      return;
-    }
-
-    const dateDebut = new Date(`${mois}-01`);
-    if (isNaN(dateDebut.getTime())) {
-      res.status(400).json({ message: "Le format du mois est invalide. Utilisez YYYY-MM." });
-      return;
-    }
-
-    // Vérification que le mois n'est pas dans le futur
+    // Obtenir le premier jour du mois en cours
     const today = new Date();
-    const moisActuel = new Date(today.getFullYear(), today.getMonth(), 1);
+    const dateDebut = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0);
 
-    if (dateDebut > moisActuel) {
-      res.status(400).json({ message: "Vous ne pouvez pas demander des factures pour un mois futur." });
-      return;
-    }
+    // Obtenir le dernier jour du mois en cours
+    const dateFin = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    const dateFin = new Date(dateDebut.getFullYear(), dateDebut.getMonth() + 1, 0, 23, 59, 59);
-
+    // Calcul de la somme totale des factures du mois en cours
     const totalFactures = await Facture.sum("total", {
       where: {
         type: "Facture",
@@ -511,38 +478,26 @@ export const sommeTotalFactureParMois = async (req: Request, res: Response) => {
       },
     });
 
-    // Format français MM-YYYY
-    const dateFormatee = `${(dateDebut.getMonth() + 1).toString().padStart(2, "0")}-${dateDebut.getFullYear()}`;
+    // Format français MM-YYYY pour l'affichage
+    const dateFormatee = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getFullYear()}`;
 
     res.json({ mois: dateFormatee, total: totalFactures || 0 });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors du calcul du total des factures", error });
+    console.error("Erreur lors du calcul du total des factures du mois :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
 
-
-
 export const sommeTotalFactureParAn = async (req: Request, res: Response) => {
   try {
-    const { annee } = req.query; // Format attendu : "YYYY"
-
-    if (typeof annee !== "string" || !/^\d{4}$/.test(annee)) {
-      res.status(400).json({ message: "Le paramètre 'annee' est requis et doit être au format YYYY." });
-      return;
-    }
-
-    const year = parseInt(annee, 10);
+    // Récupérer l'année en cours
     const currentYear = new Date().getFullYear();
 
-    // Vérification que l'année demandée n'est pas dans le futur
-    if (year > currentYear) {
-      res.status(400).json({ message: "Vous ne pouvez pas demander des factures pour une année future." });
-      return;
-    }
+    // Définir les bornes de l'année en cours
+    const dateDebut = new Date(currentYear, 0, 1, 0, 0, 0, 0);
+    const dateFin = new Date(currentYear, 11, 31, 23, 59, 59, 999);
 
-    const dateDebut = new Date(year, 0, 1, 0, 0, 0, 0);
-    const dateFin = new Date(year, 11, 31, 23, 59, 59, 999);
-
+    // Calcul de la somme totale des factures de l'année en cours
     const totalFactures = await Facture.sum("total", {
       where: {
         type: "Facture",
@@ -552,10 +507,147 @@ export const sommeTotalFactureParAn = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({ annee: year, total: totalFactures || 0 });
+    res.json({ annee: currentYear, total: totalFactures || 0 });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors du calcul du total des factures de l'année", error });
+    console.error("Erreur lors du calcul du total des factures de l'année :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+
+export async function searchChiffreAffaire(req: Request, res: Response) {
+  try {
+    // Assurez-vous que les paramètres sont bien des chaînes de caractères
+    const { annee, mois, jour } = req.query;
+
+    // Fonction pour obtenir les totaux des factures selon la date
+    const getTotalFacture = async (dateDebut: Date, dateFin: Date) => {
+      return await Facture.sum("total", {
+        where: {
+          type: "Facture",
+          createdAt: {
+            [Op.between]: [dateDebut, dateFin],
+          },
+        },
+      });
+    };
+
+    let totalJour = 0;
+    let totalMois = 0;
+    let totalAn = 0;
+
+    // Calcul du total pour le jour (si un jour est spécifié)
+    if (jour && typeof jour === 'string') {
+      const dateDebutJour = new Date(jour);
+      if (isNaN(dateDebutJour.getTime())) {
+        res.status(400).json({ message: "Le format du jour est invalide. Utilisez YYYY-MM-DD." });
+        return;
+      }
+      dateDebutJour.setHours(0, 0, 0, 0);
+      const dateFinJour = new Date(dateDebutJour);
+      dateFinJour.setHours(23, 59, 59, 999);
+
+      totalJour = await getTotalFacture(dateDebutJour, dateFinJour);
+    }
+
+    // Calcul du total pour le mois (si un mois est spécifié)
+    if (mois && typeof mois === 'string') {
+      const dateDebutMois = new Date(`${mois}-01`);
+      if (isNaN(dateDebutMois.getTime())) {
+        res.status(400).json({ message: "Le format du mois est invalide. Utilisez YYYY-MM." });
+        return;
+      }
+      const dateFinMois = new Date(dateDebutMois.getFullYear(), dateDebutMois.getMonth() + 1, 0, 23, 59, 59);
+
+      totalMois = await getTotalFacture(dateDebutMois, dateFinMois);
+    }
+
+    // Calcul du total pour l'année (si une année est spécifiée)
+    if (annee && typeof annee === 'string') {
+      const year = parseInt(annee, 10);
+      if (isNaN(year)) {
+        res.status(400).json({ message: "Le format de l'année est invalide. Utilisez YYYY." });
+        return;
+      }
+      const dateDebutAn = new Date(year, 0, 1, 0, 0, 0, 0);
+      const dateFinAn = new Date(year, 11, 31, 23, 59, 59, 999);
+
+      totalAn = await getTotalFacture(dateDebutAn, dateFinAn);
+    }
+
+    // Retourner les résultats avec les totaux des factures
+    res.json({
+      totalJour,
+      totalMois,
+      totalAn,
+    });
+  } catch (error) {
+    console.error("Erreur lors du calcul des totaux des factures :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+}
+
+export async function searchPeriodeChiffreAffaire(req: Request, res: Response) {
+  try {
+    const { dateDebut, dateFin } = req.query;
+
+    // Vérifier si les deux dates sont présentes
+    if (!dateDebut || !dateFin) {
+      res.status(400).json({ message: "Les paramètres 'dateDebut' et 'dateFin' sont requis." });
+      return;
+    }
+
+    // Convertir les dates en objets Date
+    const startDate = new Date(dateDebut as string);
+    const endDate = new Date(dateFin as string);
+
+    // Vérifier si les dates sont valides
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      res.status(400).json({ message: "Les dates fournies sont invalides. Utilisez le format YYYY-MM-DD." });
+      return;
+    }
+
+    // Vérifier si la date de début est dans le futur
+    const currentDate = new Date();
+    if (startDate > currentDate) {
+      res.status(400).json({ message: "La date de début ne peut pas être dans le futur." });
+      return;
+    }
+
+    // S'assurer que la date de fin est après la date de début
+    if (startDate > endDate) {
+      res.status(400).json({ message: "La date de fin doit être après la date de début." });
+      return;
+    }
+
+    // Ajuster les dates pour qu'elles ne contiennent pas d'heures, minutes, secondes ou millisecondes
+    startDate.setHours(0, 0, 0, 0); // Date début à minuit
+    endDate.setHours(23, 59, 59, 999); // Date fin à 23:59:59.999
+
+    // Fonction pour obtenir la somme des factures entre les deux dates
+    const totalFacture = await Facture.sum("total", {
+      where: {
+        type: "Facture",
+        createdAt: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+    });
+
+    // Si aucune facture n'est trouvée, retourner 0
+    if (!totalFacture) {
+      res.json({ totalFacture: 0 });
+      return;
+    }
+
+    // Retourner la somme des factures pour la période spécifiée
+    res.json({ totalFacture });
+  } catch (error) {
+    console.error("Erreur lors du calcul de la somme des factures :", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+}
+
+
+
 
 
