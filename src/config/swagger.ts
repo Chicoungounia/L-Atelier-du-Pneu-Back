@@ -68,17 +68,7 @@ const swaggerOptions = {
             updatedAt: { type: "string", format: "date-time", example: "2025-03-16T10:20:30Z", description: "Date et heure de la dernière mise à jour" },
           },
         },
-        Prestations: {
-          type: "object",
-          properties: {
-            id: { type: "integer", example: 1, description: "ID unique de la prestation" },
-            travail: { type: "string", example: "Montage de pneus", description: "Type de prestation" },
-            description: { type: "string", example: "Montage de quatre pneus neufs sur jantes.", description: "Description détaillée de la prestation" },
-            prix: { type: "number", format: "float", example: 50.00, description: "Prix de la prestation" },
-            createdAt: { type: "string", format: "date-time", example: "2025-03-16T10:20:30Z", description: "Date et heure de création" },
-            updatedAt: { type: "string", format: "date-time", example: "2025-03-16T10:20:30Z", description: "Date et heure de la dernière mise à jour" },
-          },
-        },
+     
         Rendez_Vous: {
           type: "object",
           properties: {

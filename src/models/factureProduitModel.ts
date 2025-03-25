@@ -62,4 +62,7 @@ FactureProduit.init(
   }
 );
 
+
+
+
 export default FactureProduit;

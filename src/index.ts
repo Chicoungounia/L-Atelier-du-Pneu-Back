@@ -13,6 +13,7 @@ import prestationRoutes from './routes/prestationRoutes';
 import factureRoutes from './routes/factureRoutes';
 import authRoutes from './routes/authRoutes';
 import { v2 as cloudinary } from 'cloudinary';
+// import dashboardRoutes from './routes/dashboardRoutes';
 
 // ✅ Charger les variables d’environnement en premier
 dotenv.config();
@@ -42,6 +43,7 @@ app.use('/clients', clientRoutes);
 app.use("/rendezvous", rendezVousRoutes);
 app.use("/prestation", prestationRoutes);
 app.use("/factures", factureRoutes);
+// app.use("/dashboard", dashboardRoutes);
 
 // ✅ Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -59,20 +61,5 @@ app.listen(PORT, () => {
         api_secret: 'r-Fzl9fiVspIT3cEjsMvqBStPZA' 
     });
 
-    try {
-        // ✅ Upload d'une image
-        const uploadResult = await cloudinary.uploader.upload(
-            'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', 
-            { public_id: 'shoes' }
-        );
-        console.log(uploadResult);
 
-        // ✅ Optimisation de l'image
-        console.log(cloudinary.url('shoes', { fetch_format: 'auto', quality: 'auto' }));
-
-        // ✅ Transformation (recadrage auto)
-        console.log(cloudinary.url('shoes', { crop: 'auto', gravity: 'auto', width: 500, height: 500 }));
-    } catch (error) {
-        console.error("Erreur Cloudinary :", error);
-    }
 })();

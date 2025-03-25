@@ -178,6 +178,118 @@ router.put("/modifier/role/:id",verifyTokenMiddleware, isAdmin, modifierRoleUser
 
 /**
  * @swagger
+ * /users/afficher/allactifs:
+ *   get:
+ *     summary: Récupérer tous les utilisateurs actifs
+ *     description: Renvoie la liste des utilisateurs ayant le statut "Actif" (nécessite une authentification via token JWT).
+ *     tags:
+ *       - Utilisateurs
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des utilisateurs actifs récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Liste des utilisateurs actifs récupérée avec succès"
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       nom:
+ *                         type: string
+ *                         example: "Dupont"
+ *                       prenom:
+ *                         type: string
+ *                         example: "Jean"
+ *                       speudo:
+ *                         type: string
+ *                         example: "jdupont"
+ *                       email:
+ *                         type: string
+ *                         example: "jean.dupont@example.com"
+ *                       role:
+ *                         type: string
+ *                         example: "Employé"
+ *                       status:
+ *                         type: string
+ *                         example: "Actif"
+ *       401:
+ *         description: Accès refusé, token manquant
+ *       403:
+ *         description: Accès interdit, token invalide
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get("/afficher/allactifs", verifyTokenMiddleware, afficherUsersActif);
+
+/**
+ * @swagger
+ * /users/afficher/allusers:
+ *   get:
+ *     summary: Récupérer tous les utilisateurs
+ *     description: Renvoie la liste complète des utilisateurs enregistrés (nécessite une authentification via token JWT).
+ *     tags:
+ *       - Utilisateurs
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des utilisateurs récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Liste des utilisateurs récupérée avec succès"
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       nom:
+ *                         type: string
+ *                         example: "Dupont"
+ *                       prenom:
+ *                         type: string
+ *                         example: "Jean"
+ *                       speudo:
+ *                         type: string
+ *                         example: "jdupont"
+ *                       email:
+ *                         type: string
+ *                         example: "jean.dupont@example.com"
+ *                       role:
+ *                         type: string
+ *                         example: "Employé"
+ *                       status:
+ *                         type: string
+ *                         example: "Actif"
+ *       401:
+ *         description: Accès refusé, token manquant
+ *       403:
+ *         description: Accès interdit, token invalide
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get("/afficher/allusers", verifyTokenMiddleware, afficherAllUsers);
+
+/**
+ * @swagger
  * /users/afficher/{id}:
  *   get:
  *     summary: Récupérer un utilisateur par son ID
@@ -230,119 +342,7 @@ router.put("/modifier/role/:id",verifyTokenMiddleware, isAdmin, modifierRoleUser
  *       500:
  *         description: Erreur interne du serveur
  */
-router.get("/afficher/:id", verifyTokenMiddleware, afficherUser )
-
-/**
- * @swagger
- * /users/afficher/all:
- *   get:
- *     summary: Récupérer tous les utilisateurs
- *     description: Renvoie la liste complète des utilisateurs enregistrés (nécessite une authentification via token JWT).
- *     tags:
- *       - Utilisateurs
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: Liste des utilisateurs récupérée avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Liste des utilisateurs récupérée avec succès"
- *                 users:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 1
- *                       nom:
- *                         type: string
- *                         example: "Dupont"
- *                       prenom:
- *                         type: string
- *                         example: "Jean"
- *                       speudo:
- *                         type: string
- *                         example: "jdupont"
- *                       email:
- *                         type: string
- *                         example: "jean.dupont@example.com"
- *                       role:
- *                         type: string
- *                         example: "Employé"
- *                       status:
- *                         type: string
- *                         example: "Actif"
- *       401:
- *         description: Accès refusé, token manquant
- *       403:
- *         description: Accès interdit, token invalide
- *       500:
- *         description: Erreur interne du serveur
- */
-router.get("/afficher/all", verifyTokenMiddleware, afficherAllUsers )
-
-/**
- * @swagger
- * /users/afficher/actifs:
- *   get:
- *     summary: Récupérer tous les utilisateurs actifs
- *     description: Renvoie la liste des utilisateurs ayant le statut "Actif" (nécessite une authentification via token JWT).
- *     tags:
- *       - Utilisateurs
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: Liste des utilisateurs actifs récupérée avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Liste des utilisateurs actifs récupérée avec succès"
- *                 users:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 1
- *                       nom:
- *                         type: string
- *                         example: "Dupont"
- *                       prenom:
- *                         type: string
- *                         example: "Jean"
- *                       speudo:
- *                         type: string
- *                         example: "jdupont"
- *                       email:
- *                         type: string
- *                         example: "jean.dupont@example.com"
- *                       role:
- *                         type: string
- *                         example: "Employé"
- *                       status:
- *                         type: string
- *                         example: "Actif"
- *       401:
- *         description: Accès refusé, token manquant
- *       403:
- *         description: Accès interdit, token invalide
- *       500:
- *         description: Erreur interne du serveur
- */
-router.get("/afficher/actifs", verifyTokenMiddleware, afficherUsersActif);
+router.get("/afficher/:id", verifyTokenMiddleware, afficherUser );
 
 /**
  * @swagger

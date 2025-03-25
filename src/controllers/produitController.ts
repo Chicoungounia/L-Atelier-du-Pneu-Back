@@ -203,6 +203,34 @@ export const afficherAllProduit = async (req: Request, res: Response) => {
   }
 };
 
+export async function getStocks(req: Request, res: Response): Promise<void> {
+  try {
+    console.log("Récupération des stocks des produits...");
+    // Récupérer les stocks des produits avec les attributs spécifiés
+    const stocks = await Produit.findAll({
+      attributes: [
+        'id',
+        'saison',
+        'marque',
+        'modele',
+        'largeur_pneu',
+        'profil_pneu',
+        'diametre',
+        'stock'
+      ],
+      order: [['modele', 'ASC']], 
+    });
+
+  
+    res.status(200).json({
+      message: "Stocks récupérés avec succès.",
+      data: stocks,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stocks :", error);
+    res.status(500).json({ message: "Erreur interne du serveur." });
+  }
+}
 
 export async function searchProduit(req: Request, res: Response) { 
   try {

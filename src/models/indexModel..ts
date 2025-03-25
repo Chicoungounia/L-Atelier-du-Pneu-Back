@@ -4,6 +4,7 @@ import Produit from "./produitModel";
 import FactureProduit from "./factureProduitModel";
 import FacturePrestation from "./facturePrestationModel";
 import Prestation from "./prestationModels";
+// import Dashboard from "./dashboardModel";
 
 // Définition des relations ici
 Facture.belongsToMany(Produit, { through: FactureProduit, foreignKey: "factureId" });

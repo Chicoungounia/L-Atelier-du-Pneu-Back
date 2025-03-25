@@ -5,6 +5,7 @@ import Prestation from "./prestationModels";
 import Produit from "./produitModel";
 import RendezVous from "./rendezVousModel";
 import Facture from './factureModels';
+// import Dashboard from './dashboardModel';
 const syncDatabase = async () => {
     try {
     //alter: true Met à jour la structure automatiquement la structure de la base de données

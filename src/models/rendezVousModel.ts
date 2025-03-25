@@ -2,6 +2,7 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
 import Client from "./clientModel";
 import { User } from "./userModels"; 
+import Facture from "./factureModels";
 
 interface RendezVousAttributes {
   id?: number;

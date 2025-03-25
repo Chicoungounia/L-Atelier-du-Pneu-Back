@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ajouterFacture, modifierFacture, modifierTypeEtPayement, afficherTypeFactures, afficherAllFactures, afficherUne, afficherTypeDevis, afficherAllApayer, } from "../controllers/factureController";
+import { ajouterFacture, modifierFacture, modifierTypeEtPayement, afficherTypeFactures, afficherAllFactures, afficherUne, afficherTypeDevis, afficherAllApayer, sommeTotalFactureParMois, sommeTotalFactureParAn, sommeTotalFactureParJour } from "../controllers/factureController";
 import { verifyTokenMiddleware } from "../middlewares/verifyTokenMiddleware";
 
 const router = Router();
@@ -484,6 +484,89 @@ router.get("/afficher/type/factures", verifyTokenMiddleware, afficherTypeFacture
  *         description: Erreur serveur lors de la récupération des factures à payer.
  */
 router.get("/afficher/all/apayer", verifyTokenMiddleware, afficherAllApayer);
+
+/**
+ * @swagger
+ * /factures/afficher/total/par/jour:
+ *   get:
+ *     summary: Récupère la somme totale des factures pour un jour donné
+ *     description: Retourne le total des factures pour une journée spécifique
+ *     tags:
+ *       - Dashboard
+ *     parameters:
+ *       - in: query
+ *         name: jour
+ *         schema:
+ *           type: string
+ *         description: Jour au format YYYY-MM-DD
+ *     responses:
+ *       200:
+ *         description: Succès
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get("/afficher/total/par/jour", sommeTotalFactureParJour);
+
+/**
+ * @swagger
+ * /factures/afficher/total/par/mois:
+ *   get:
+ *     summary: Calcule la somme totale des factures sur une période d'un mois
+ *     description: Retourne le total des factures pour un mois donné ou le mois en cours si non précisé.
+ *     tags:
+ *       - Dashboard
+ *     parameters:
+ *       - in: query
+ *         name: mois
+ *         schema:
+ *           type: string
+ *           example: "2025-03"
+ *         description: Le mois au format "YYYY-MM" pour lequel récupérer la somme totale des factures.
+ *     responses:
+ *       200:
+ *         description: Retourne le total des factures pour le mois spécifié.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mois:
+ *                   type: string
+ *                   example: "2025-03"
+ *                 total:
+ *                   type: number
+ *                   example: 5000.75
+ *       500:
+ *         description: Erreur serveur lors du calcul du total des factures.
+ */
+router.get("/afficher/total/par/mois", sommeTotalFactureParMois);
+
+/**
+ * @swagger
+ * /factures/afficher/total/par/annee:
+ *   get:
+ *     summary: Récupère la somme totale des factures pour une année donnée
+ *     description: Retourne le total des factures pour une année complète 
+*     tags:
+ *       - Dashboard
+ *     parameters:
+ *       - in: query
+ *         name: annee
+ *         schema:
+ *           type: string
+ *         description: Année au format YYYY
+ *     responses:
+ *       200:
+ *         description: Succès
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get("/afficher/total/par/annee", sommeTotalFactureParAn);
+
+
+
+
+
   
 
 export default router;

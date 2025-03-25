@@ -221,59 +221,6 @@ router.delete("/delete/:id",verifyTokenMiddleware, deleteRendezVous);
 
 /**
  * @swagger
- * /rendezvous/afficher/{id}:
- *   get:
- *     summary: Récupérer un rendez-vous par son ID
- *     description: Permet de récupérer les informations d'un rendez-vous spécifique.
- *     tags: 
- *       - Rendez-vous
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID du rendez-vous à récupérer
- *     responses:
- *       200:
- *         description: Rendez-vous récupéré avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Rendez-vous récupéré avec succès"
- *                 rendezVous:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                     clientId:
- *                       type: integer
- *                     userId:
- *                       type: integer
- *                     pont:
- *                       type: integer
- *                     dateDebut:
- *                       type: string
- *                       format: date-time
- *                     dateFin:
- *                       type: string
- *                       format: date-time
- *                     status:
- *                       type: string
- *                       enum: [Réserver, Annuler, Effectuer]
- *       404:
- *         description: Rendez-vous non trouvé
- *       500:
- *         description: Erreur interne du serveur
- */
-router.get("/afficher/:id", verifyTokenMiddleware, afficherRendezVous);
-
-/**
- * @swagger
  * /rendezvous/afficher/all:
  *   get:
  *     summary: Récupère tous les rendez-vous
@@ -327,6 +274,59 @@ router.get("/afficher/:id", verifyTokenMiddleware, afficherRendezVous);
  *         description: Erreur interne du serveur.
  */
 router.get("/afficher/all", verifyTokenMiddleware, afficherAllRendezVous);
+
+/**
+ * @swagger
+ * /rendezvous/afficher/one/{id}:
+ *   get:
+ *     summary: Récupérer un rendez-vous par son ID
+ *     description: Permet de récupérer les informations d'un rendez-vous spécifique.
+ *     tags: 
+ *       - Rendez-vous
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du rendez-vous à récupérer
+ *     responses:
+ *       200:
+ *         description: Rendez-vous récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Rendez-vous récupéré avec succès"
+ *                 rendezVous:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     clientId:
+ *                       type: integer
+ *                     userId:
+ *                       type: integer
+ *                     pont:
+ *                       type: integer
+ *                     dateDebut:
+ *                       type: string
+ *                       format: date-time
+ *                     dateFin:
+ *                       type: string
+ *                       format: date-time
+ *                     status:
+ *                       type: string
+ *                       enum: [Réserver, Annuler, Effectuer]
+ *       404:
+ *         description: Rendez-vous non trouvé
+ *       500:
+ *         description: Erreur interne du serveur
+ */
+router.get("/afficher/one/:id", verifyTokenMiddleware, afficherRendezVous);
 
 /**
  * @swagger
@@ -385,7 +385,7 @@ router.get("/afficher/all/reserver", verifyTokenMiddleware, afficherAllRendezVou
 
 /**
  * @swagger
- * /rendezvous/client/{clientId}:
+ * /rendezvous/afficher/allbyclient/{clientId}:
  *   get:
  *     summary: Récupère tous les rendez-vous d'un client spécifique
  *     description: Retourne la liste des rendez-vous d'un client donné en fonction de son `clientId`.
@@ -445,7 +445,7 @@ router.get("/afficher/all/reserver", verifyTokenMiddleware, afficherAllRendezVou
  *       500:
  *         description: Erreur interne du serveur.
  */
-router.get("/afficher/:clientId", verifyTokenMiddleware, afficherAllRendezVousClient);
+router.get("/afficher/allbyclient/:clientId", verifyTokenMiddleware, afficherAllRendezVousClient);
 
 /**
  * @swagger

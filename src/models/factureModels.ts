@@ -12,7 +12,7 @@ interface FactureAttributes {
   type: "Devis" | "Facture";
   rendezVousId?: number | null;
   userId?: number | null;
-  clientId: number;
+  clientId: number | null;
   total_htva: number;
   total_remise?: number | null;
   total_tva: number;
@@ -30,7 +30,7 @@ class Facture extends Model<FactureAttributes, FactureCreationAttributes> implem
   public type!: "Devis" | "Facture";
   public rendezVousId!: number | null;
   public userId!: number | null;
-  public clientId!: number;
+  public clientId!: number | null;
   public total_htva!: number;
   public total_remise!: number | null;
   public total_tva!: number;
@@ -109,6 +109,15 @@ Facture.init(
       allowNull: false,
       defaultValue: "Carte bancaire",
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: "created_at", // Sequelize comprendra que `createdAt` correspond à `created_at`
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: "updated_at",
+    },
+
   },
   {
     sequelize,

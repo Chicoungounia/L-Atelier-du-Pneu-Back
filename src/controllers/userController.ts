@@ -206,8 +206,12 @@ export async function afficherUsersActif(req: Request, res: Response) {
         });
 
         res.status(200).json({ message: "Liste des utilisateurs actifs récupérée avec succès", users });
+        return;
     } catch (error) {
-        res.status(500).json({ message: "Erreur interne du serveur", error });
+        console.error("Erreur lors de la récupération des utilisateurs actifs :", error);
+        const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+        res.status(500).json({ message: "Erreur interne du serveur", error: errorMessage });
+        return;
     }
 }
 

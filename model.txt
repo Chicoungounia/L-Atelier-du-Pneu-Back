@@ -1,0 +1,198 @@
+
+Facture un produit une prestation
+
+{
+  "type": "Facture",                        
+  "userId": 3,
+  "clientId": 9,
+  "rendezVousId": 0,
+  "produits": [
+    {
+      "produitId": 5,
+      "quantite": 4,
+      "remise": 0
+    }
+  ],
+  "prestations": [
+    {
+      "prestationId": 1,
+      "quantite": 4,
+      "remise": 0
+    }
+  ],
+  "status_payement": "Payer",
+  "mode_payement": "Espèces"
+}
+
+
+{
+  "type": "Facture",
+  "userId": 3,
+  "clientId": 10,
+  "rendezVousId": 0,
+  "produits": [
+    {
+      "produitId": 6,
+      "quantite": 4,
+      "remise": 0
+    },
+     {
+      "produitId": 7,
+      "quantite": 4,
+      "remise": 0
+    }
+  ],
+  "prestations": [
+    {
+      "prestationId": 2,
+      "quantite": 4,
+      "remise": 0
+    },
+    {
+      "prestationId": 1,
+      "quantite": 4,
+      "remise": 0
+    }
+  ],
+  "status_payement": "Payer",
+  "mode_payement": "Carte bancaire"
+}
+
+
+classDiagram
+direction BT
+    class Facture {
+	    +Integer id
+	    +String type
+	    +Integer rendezVousId
+	    +Integer userId
+	    +Integer clientId
+	    +Decimal total_htva
+	    +Decimal total_remise
+	    +Decimal total_tva
+	    +Decimal total
+	    +String status_payement
+	    +String mode_payement
+	    +Date created_at
+	    +Date updated_at
+	    +Integer FK_rendezVousId
+	    +Integer FK_userId
+	    +Integer FK_clientId
+    }
+
+    class User {
+	    +Integer id
+	    +String nom
+	    +String prenom
+	    +String speudo
+	    +String email
+	    +String role
+	    +String hashedpassword
+	    +String status
+	    +Date created_at
+	    +Date updated_at
+	    +Integer FK_factureId
+	    +Integer FK_rendezVousId
+    }
+
+    class Client {
+	    +Integer id
+	    +String nom
+	    +String prenom
+	    +String adresse
+	    +String email
+	    +String telephone
+	    +String type
+	    +String status
+	    +Date created_at
+	    +Date updated_at
+	    +Integer FK_factureId
+	    +Integer FK_rendezVousId
+    }
+
+    class RendezVous {
+	    +Integer id
+	    +Date date
+	    +String description
+	    +Integer FK_factureId
+	    +Integer FK_clientId
+	    +Integer FK_userId
+    }
+
+    class Produit {
+	    +Integer id
+	    +String saison
+	    +String marque
+	    +String modele
+	    +Integer largeur_pneu
+	    +Integer profil_pneu
+	    +String type_pneu
+	    +Integer diametre
+	    +Integer indice_charge
+	    +String indice_vitesse
+	    +String renfort
+	    +Integer stock
+	    +Decimal prix_htva
+	    +String image
+	    +Boolean status
+	    +Date created_at
+	    +Date updated_at
+	    +Integer FK_factureProduitId
+    }
+
+    class Prestation {
+	    +Integer id
+	    +String travail
+	    +String description
+	    +Decimal prix_htva
+	    +Boolean status
+	    +Date created_at
+	    +Date updated_at
+	    +Integer FK_facturePrestationId
+    }
+
+    class FactureProduit {
+	    +Integer id
+	    +Integer factureId
+	    +Integer produitId
+	    +Decimal prix_htva
+	    +Integer quantite
+	    +Decimal remise
+	    +Decimal total_htva
+	    +Decimal tva
+	    +Decimal total_ttc
+	    +Integer FK_factureId
+	    +Integer FK_produitId
+    }
+
+    class FacturePrestation {
+	    +Integer id
+	    +Integer factureId
+	    +Integer prestationId
+	    +Decimal prix_htva
+	    +Integer quantite
+	    +Decimal remise
+	    +Decimal total_htva
+	    +Decimal tva
+	    +Decimal total_ttc
+	    +Integer FK_factureId
+	    +Integer FK_prestationId
+    }
+
+    Facture "1" --> "1" User : belongsTo
+    Facture "1" --> "1" Client : belongsTo
+    Facture "1" --> "0..1" RendezVous : belongsTo
+    Facture "1" --> "0..*" FactureProduit : hasMany
+    Facture "1" --> "0..*" FacturePrestation : hasMany
+    FactureProduit "1" --> "1" Produit : belongsTo
+    FacturePrestation "1" --> "1" Prestation : belongsTo
+
+	style Facture fill:#bfb,stroke:#6f6,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+	style User fill:#bfb,stroke:#6f6,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+	style Client fill:#ffb,stroke:#663,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+
+	style Produit fill:#ffb,stroke:#663,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+	style Prestation fill:#ffb,stroke:#663,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+	style FactureProduit fill:#9ff,stroke:#369,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+	style FacturePrestation fill:#9ff,stroke:#369,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+

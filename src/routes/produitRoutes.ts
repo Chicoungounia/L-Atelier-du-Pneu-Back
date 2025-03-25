@@ -1,5 +1,5 @@
 import express from 'express';
-import { afficherAllProduit, afficherAllTrueProduit, afficherProduit, ajouterProduit, modifierProduit, modifierStatusProduit, searchProduit } from '../controllers/produitController';
+import { afficherAllProduit, afficherAllTrueProduit, afficherProduit, ajouterProduit, getStocks, modifierProduit, modifierStatusProduit, searchProduit } from '../controllers/produitController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { isAdmin } from '../middlewares/verifyAdminMiddleware';
 
@@ -258,7 +258,134 @@ router.put('/modifier/status/:id', verifyTokenMiddleware, isAdmin, modifierStatu
 
 /**
  * @swagger
- * /produits/afficher/{id}:
+ * /produits/afficher/true:
+ *   get:
+ *     summary: Récupérer tous les produits actifs
+ *     description: Retourne la liste des produits dont le statut est "true".
+ *     tags:
+ *       - Produits
+ *     responses:
+ *       200:
+ *         description: Liste des produits actifs récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Produit'
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get('/afficher/true', verifyTokenMiddleware, afficherAllTrueProduit);
+
+/**
+ * @swagger
+ * /produits/afficher/allpneus:
+ *   get:
+ *     summary: Récupérer tous les produits
+ *     description: Retourne la liste complète des produits, qu'ils soient actifs ou non.
+ *     tags:
+ *       - Produits
+ *     responses:
+ *       200:
+ *         description: Liste complète des produits récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Produit'
+ *       500:
+ *         description: Erreur interne du serveur.
+ */
+router.get('/afficher/allpneus', verifyTokenMiddleware, afficherAllProduit);
+
+/**
+ * @swagger
+ * /produits/afficher/stocks:
+ *   get:
+ *     summary: Récupère la liste des stocks des produits
+ *     description: Retourne une liste de tous les produits avec leurs informations de stock, triés par modèle.
+ *     tags:
+ *       - Produits
+
+ *     responses:
+ *       200:
+ *         description: Liste des stocks récupérée avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Stocks récupérés avec succès.
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       saison:
+ *                         type: string
+ *                         example: "Été"
+ *                       marque:
+ *                         type: string
+ *                         example: "Michelin"
+ *                       modele:
+ *                         type: string
+ *                         example: "Primacy 4"
+ *                       largeur_pneu:
+ *                         type: number
+ *                         example: 205
+ *                       profil_pneu:
+ *                         type: number
+ *                         example: 55
+ *                       diametre:
+ *                         type: number
+ *                         example: 16
+ *                       stock:
+ *                         type: number
+ *                         example: 15
+ *       404:
+ *         description: Aucun produit trouvé.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Aucun produit trouvé.
+ *       400:
+ *         description: Erreur de validation des données.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Erreur de validation des données.
+ *                 details:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         description: Erreur interne du serveur.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Erreur interne du serveur.
+ */
+router.get("/afficher/stocks", verifyTokenMiddleware, getStocks);
+
+/**
+ * @swagger
+ * /produits/afficher/one/{id}:
  *   get:
  *     summary: Récupérer un produit par son ID
  *     description: Renvoie les détails d'un produit en fonction de son ID.
@@ -315,51 +442,7 @@ router.put('/modifier/status/:id', verifyTokenMiddleware, isAdmin, modifierStatu
  *                   type: string
  *                   example: "Erreur interne du serveur"
  */
-router.get('/afficher/:id', verifyTokenMiddleware, afficherProduit);
-
-/**
- * @swagger
- * /produits/afficher/true:
- *   get:
- *     summary: Récupérer tous les produits actifs
- *     description: Retourne la liste des produits dont le statut est "true".
- *     tags:
- *       - Produits
- *     responses:
- *       200:
- *         description: Liste des produits actifs récupérée avec succès.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Produit'
- *       500:
- *         description: Erreur interne du serveur.
- */
-router.get('/afficher/true', verifyTokenMiddleware, afficherAllTrueProduit);
-
-/**
- * @swagger
- * /produits/afficher/all:
- *   get:
- *     summary: Récupérer tous les produits
- *     description: Retourne la liste complète des produits, qu'ils soient actifs ou non.
- *     tags:
- *       - Produits
- *     responses:
- *       200:
- *         description: Liste complète des produits récupérée avec succès.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Produit'
- *       500:
- *         description: Erreur interne du serveur.
- */
-router.get('/afficher/all', verifyTokenMiddleware, afficherAllProduit);
+router.get('/afficher/one/:id', verifyTokenMiddleware, afficherProduit);
 
 /**
  * @swagger
@@ -429,6 +512,9 @@ router.get('/afficher/all', verifyTokenMiddleware, afficherAllProduit);
  *         description: Erreur interne du serveur
  */
 router.get('/recherche', verifyTokenMiddleware, searchProduit);
+
+
+
 
 
 export default router;

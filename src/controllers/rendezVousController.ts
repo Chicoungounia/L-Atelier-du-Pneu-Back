@@ -177,6 +177,7 @@ export const deleteRendezVous = async (req: Request, res: Response) => {
 
 export const afficherRendezVous = async (req: Request, res: Response) => {
     try {
+        console.log("mauvais controplleur")
         const { id } = req.params;
 
         if (!id || isNaN(Number(id))) {
