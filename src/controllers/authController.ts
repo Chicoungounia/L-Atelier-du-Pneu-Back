@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { hashPassword, verifyPassword } from '../utilis/pwdUtils';
-import { generateToken } from '../utilis/JWTUtils';
+import { hashPassword, verifyPassword } from '../utils/pwdUtils';
+import { generateToken } from '../utils/JWTUtils';
 import { User } from '../models/userModels';
 
 export async function register(req: Request, res: Response) {

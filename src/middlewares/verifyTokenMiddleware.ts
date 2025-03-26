@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utilis/JWTUtils';
+import { verifyToken } from '../utils/JWTUtils';
 
 // ✅ Étendre Request pour inclure `user`
 declare global {

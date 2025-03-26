@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utilis/JWTUtils';
+import { verifyToken } from '../utils/JWTUtils';
 
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
     const token = req.cookies ? req.cookies.jwt : null;  // Vérifie si req.cookies est défini

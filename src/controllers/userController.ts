@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { verifyToken } from '../utilis/JWTUtils';
+import { verifyToken } from '../utils/JWTUtils';
 import { User } from '../models/userModels';
 import sequelize from '../config/database';
 

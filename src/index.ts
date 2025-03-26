@@ -13,7 +13,8 @@ import prestationRoutes from './routes/prestationRoutes';
 import factureRoutes from './routes/factureRoutes';
 import authRoutes from './routes/authRoutes';
 import { v2 as cloudinary } from 'cloudinary';
-// import dashboardRoutes from './routes/dashboardRoutes';
+import cors from 'cors';
+import helmet from 'helmet';
 
 // ✅ Charger les variables d’environnement en premier
 dotenv.config();
@@ -24,16 +25,46 @@ const app = express();
 // ✅ Utilisation de cookie-parser
 app.use(cookieParser());
 
+// Activer CORS uniquement pour une seule origine
+const corsOptions = {
+    origin: process.env.CLIENT_URL || "http://localhost:4200", // Placer le domaine du client pour l'autoriser
+    methods: 'GET,POST,DELETE,PUT', // Restreindre les méthodes autorisées
+    allowedHeaders: 'Content-Type,Authorization', // Définir les en-têtes acceptés
+    credentials: true // Autoriser les cookies et les headers sécurisés
+};
+app.use(cors(corsOptions));
+
 // ✅ Connecter Sequelize
 testConnection().then(() => syncDatabase());
 
 // ✅ Définition du port du serveur
 const PORT = process.env.PORT || 3000;
+console.log(`Server running on port: ${PORT}`);
 
 console.log("Lancement du serveur...");
 
 // ✅ Configuration des middlewares
 app.use(express.json());
+
+// Activer helmet pour sécuriser les en-têtes HTTP
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'nonce-random123'"],
+                styleSrc: ["'self'"], // Supprimer 'strict-dynamic'
+                imgSrc: ["'self'"], // Supprimer 'data:'
+                objectSrc: ["'none'"],
+                baseUri: ["'self'"],
+                formAction: ["'self'"],
+                frameAncestors: ["'none'"],
+                scriptSrcAttr: ["'none'"],
+                upgradeInsecureRequests: [],
+            },
+        },
+    })
+);
 
 // ✅ Ajout des routes
 app.use('/auth', authRoutes);
@@ -43,7 +74,6 @@ app.use('/clients', clientRoutes);
 app.use("/rendezvous", rendezVousRoutes);
 app.use("/prestation", prestationRoutes);
 app.use("/factures", factureRoutes);
-// app.use("/dashboard", dashboardRoutes);
 
 // ✅ Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

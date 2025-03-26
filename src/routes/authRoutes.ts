@@ -1,6 +1,8 @@
 import express from 'express';
 import { login, modifierPassword, register } from '../controllers/authController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
+import { validateSchema } from '../utils/joiUtils';
+import { loginSchema, registerSchema, updatePasswordSchema } from '../joiValidators/authValidators';
 
 const router = express.Router();
 
@@ -89,7 +91,7 @@ const router = express.Router();
  *                   type: string
  *                   example: Erreur interne du serveur.
  */
-router.post('/register', register);
+router.post('/register', validateSchema(registerSchema), register);
 
 /**
  * @swagger
@@ -141,7 +143,7 @@ router.post('/register', register);
  *       500:
  *         description: Erreur interne du serveur.
  */
-router.post('/login', login);
+router.post('/login',validateSchema(loginSchema), login);
 
 /**
 * @swagger
@@ -181,7 +183,7 @@ router.post('/login', login);
 *       500:
 *         description: Erreur interne du serveur.
 */
-router.put('/modifier/password', verifyTokenMiddleware, modifierPassword);
+router.put('/modifier/password',validateSchema(updatePasswordSchema), verifyTokenMiddleware, modifierPassword);
 
 
 

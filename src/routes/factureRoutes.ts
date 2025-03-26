@@ -566,7 +566,7 @@ router.get("/afficher/jour/ca", verifyTokenMiddleware, sommeTotalFactureParJour)
 router.get("/afficher/mois/ca", verifyTokenMiddleware, sommeTotalFactureParMois);
 
 /**
- * @swagger
+* @swagger
 * /factures/afficher/annee/ca:
 *   get:
 *     summary: Récupère la somme totale des factures de l'année en cours.
@@ -605,7 +605,7 @@ router.get("/afficher/annee/ca", verifyTokenMiddleware, sommeTotalFactureParAn);
 
 /**
  * @swagger
- * /factures/recherche/momment/ca:
+ * /factures/recherche/moment/ca:
  *   get:
  *     summary: Récupère les totaux des factures pour un jour, un mois ou une année spécifiée
  *     description: Calcule le total des factures en fonction des critères de date.
