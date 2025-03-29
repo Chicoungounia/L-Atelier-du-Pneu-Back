@@ -27,7 +27,11 @@ export async function register(req: Request, res: Response) {
         });
 
         const { hashedpassword, ...userWithoutPassword } = newUser.toJSON();
-        res.status(201).json(userWithoutPassword);
+        console.log("Utilisateur créé :", userWithoutPassword);
+        res.status(201).json({
+            message: "Utilisateur créé avec succès",
+            user: userWithoutPassword
+          });
         return;
     } catch (err: any) {
         res.status(500).json({ message: "Erreur interne du serveur", error: err.message });

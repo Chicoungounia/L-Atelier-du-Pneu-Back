@@ -15,6 +15,7 @@ import authRoutes from './routes/authRoutes';
 import { v2 as cloudinary } from 'cloudinary';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // ✅ Charger les variables d’environnement en premier
 dotenv.config();
@@ -66,6 +67,15 @@ app.use(
     })
 );
 
+// Middleware de rate limiting
+export const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // ⏳ temps en millisecondes
+    max: 100, // 🔒 Limite à 100 requêtes par IP
+    message: "⛔ Trop de requêtes. Réessayez plus tard."
+   });
+   // Appliquer le rate limiter sur toutes les routes
+   app.use(apiLimiter);
+
 // ✅ Ajout des routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
@@ -77,6 +87,12 @@ app.use("/factures", factureRoutes);
 
 // ✅ Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// 📌 Route pour exporter le `swagger.json`
+app.get('/swagger.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerDocs);
+   });
 
 // ✅ Lancement du serveur
 app.listen(PORT, () => {

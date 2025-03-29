@@ -231,9 +231,11 @@ export async function searchClient(req: Request, res: Response) {
       raw: true,
     });
 
+    // Répondre avec les clients trouvés
     res.json(clients);
   } catch (error: any) {
     console.error("Erreur lors de la recherche :", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 }
+
