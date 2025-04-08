@@ -12,6 +12,7 @@ interface RendezVousAttributes {
   dateDebut: Date;
   dateFin: Date;
   status: "Réserver" | "Annuler" | "Effectuer";
+  timeZone: string;  // Nouvelle propriété pour le fuseau horaire
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -24,6 +25,7 @@ class RendezVous extends Model<RendezVousAttributes> implements RendezVousAttrib
   public dateDebut!: Date;
   public dateFin!: Date;
   public status!: "Réserver" | "Annuler" | "Effectuer"; 
+  public timeZone!: string;  // Nouvelle propriété pour le fuseau horaire
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -74,6 +76,10 @@ RendezVous.init(
         isIn: [["Réserver", "Annuler", "Effectuer"]], 
       },
     },
+    timeZone: {  // Ajout de la colonne timeZone
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   },
   {
     sequelize,
@@ -81,7 +87,6 @@ RendezVous.init(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
-    
   }
 );
 
@@ -92,4 +97,3 @@ RendezVous.belongsTo(Client, { foreignKey: "clientId" });
 RendezVous.belongsTo(User, { foreignKey: "userId" }); // Relation mise à jour avec `userId`
 
 export default RendezVous;
-

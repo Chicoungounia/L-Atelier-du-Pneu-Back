@@ -8,6 +8,7 @@ import FactureProduit from "../models/factureProduitModel";
 import FacturePrestation from "../models/facturePrestationModel";
 import RendezVous from "../models/rendezVousModel";
 import { User } from "../models/userModels";
+import Client from "../models/clientModel";
 
 export const ajouterFacture = async (req: Request, res: Response) => {
   const {
@@ -369,7 +370,7 @@ export const modifierTypeEtPayement = async (req: Request, res: Response) => {
 
 export const afficherAllFactures = async (req: Request, res: Response) => {
   try {
-    const factures = await Facture.findAll();
+    const factures = await Facture.findAll({include:{model:User, attributes:['speudo']}});
     res.status(200).json({ message: "Toutes les factures récupérées avec succès", factures });
   } catch (error) {
     console.error(error);

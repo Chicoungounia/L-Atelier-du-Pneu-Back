@@ -22,7 +22,7 @@ class Client extends Model<ClientAttributes> implements ClientAttributes {
   public email!: string;
   public telephone!: string;
   public type!: "Privé" | "Professionnel"; 
-  public status!: 'Actif' | 'Inactif'; // Ajout du statut actif/inactif
+  public status!: 'Actif' | 'Inactif';
   public readonly updatedAt!: Date;
 }
 

@@ -142,7 +142,7 @@ router.put("/modifier/status/:id",verifyTokenMiddleware, isAdmin, modifierStatus
 
 /**
  * @swagger
- * /prestation/afficher/tous:
+ * /prestations/afficher/tous:
  *   get:
  *     summary: Récupère toutes les prestations
  *     description: Retourne la liste de toutes les prestations disponibles.
@@ -230,7 +230,6 @@ router.get("/afficher/tous", verifyTokenMiddleware, afficherAllPrestations)
 router.get("/afficher/actif", verifyTokenMiddleware, afficherStatusAllTruePrestation);
 
 
-
 /**
  * @swagger
  * /prestation/afficher/one/{id}:
@@ -291,8 +290,6 @@ router.get("/afficher/actif", verifyTokenMiddleware, afficherStatusAllTruePresta
  *                   example: "Erreur interne du serveur"
  */
 router.get("/afficher/one/:id",verifyTokenMiddleware, afficherPrestation);
-
-
 
 
 

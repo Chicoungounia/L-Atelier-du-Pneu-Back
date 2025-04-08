@@ -82,7 +82,7 @@ app.use('/users', userRoutes);
 app.use('/produits', produitRoutes);
 app.use('/clients', clientRoutes);
 app.use("/rendezvous", rendezVousRoutes);
-app.use("/prestation", prestationRoutes);
+app.use("/prestations", prestationRoutes);
 app.use("/factures", factureRoutes);
 
 // ✅ Swagger documentation

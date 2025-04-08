@@ -3,12 +3,13 @@ import { Request, Response } from "express";
 import RendezVous from "../models/rendezVousModel";
 import { User } from "../models/userModels";
 import sequelize from "../config/database";
+import moment from "moment-timezone";
 
 export const ajouterRendezVous = async (req: Request, res: Response) => {
     try {
-        const { clientId, userId, pont, dateDebut, dateFin, status } = req.body;
+        const { clientId, userId, pont, dateDebut, dateFin, status, timeZone } = req.body;
 
-        if (!clientId || !userId || !pont || !dateDebut || !dateFin) {
+        if (!clientId || !userId || !pont || !dateDebut || !dateFin || !timeZone) {
             res.status(400).json({ message: "Tous les champs requis doivent être fournis." });
             return;
         }
@@ -19,8 +20,13 @@ export const ajouterRendezVous = async (req: Request, res: Response) => {
             return;
         }
 
-        const dateDebutObj = new Date(dateDebut);
-        const dateFinObj = new Date(dateFin);
+        const dateDebutObj = moment.tz(dateDebut, timeZone).toDate();
+        const dateFinObj = moment.tz(dateFin, timeZone).toDate();
+
+        if (isNaN(dateDebutObj.getTime()) || isNaN(dateFinObj.getTime())) {
+            res.status(400).json({ message: "Format de date invalide." });
+            return;
+        }
 
         const jour = dateDebutObj.getDay();
         if (jour === 0) {
@@ -67,21 +73,20 @@ export const ajouterRendezVous = async (req: Request, res: Response) => {
             dateDebut: dateDebutObj,
             dateFin: dateFinObj,
             status: status || "Réserver",
+            timeZone, // Stocker le fuseau horaire
         });
 
         res.status(201).json({ message: "Rendez-vous ajouté avec succès", rendezVous });
-        return;
     } catch (error) {
         console.error("Erreur lors de l'ajout du rendez-vous:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
-        return;
     }
 };
 
 export const modifierRendezVous = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { clientId, userId, pont, dateDebut, dateFin, status } = req.body;
+        const { clientId, userId, pont, dateDebut, dateFin, status, timeZone } = req.body;
 
         const rendezVous = await RendezVous.findByPk(id);
         if (!rendezVous) {
@@ -95,8 +100,8 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
             return;
         }
 
-        const dateDebutObj = new Date(dateDebut);
-        const dateFinObj = new Date(dateFin);
+        const dateDebutObj = moment.tz(dateDebut, timeZone).toDate();
+        const dateFinObj = moment.tz(dateFin, timeZone).toDate();
 
         const jour = dateDebutObj.getDay();
         if (jour === 0) {
@@ -118,6 +123,7 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
                 id: { [Op.ne]: id },
             },
         });
+
         if (pontExist) {
             res.status(400).json({ message: `Le pont ${pont} est déjà réservé à cette heure.` });
             return;
@@ -131,6 +137,7 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
                 id: { [Op.ne]: id },
             },
         });
+
         if (ouvrierExist) {
             res.status(400).json({ message: "L'ouvrier est déjà occupé à cette heure." });
             return;
@@ -143,16 +150,16 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
             dateDebut: dateDebutObj,
             dateFin: dateFinObj,
             status,
+            timeZone, // Mettre à jour le fuseau horaire
         });
 
         res.status(200).json({ message: "Rendez-vous modifié avec succès", rendezVous });
-        return;
     } catch (error) {
         console.error("Erreur lors de la modification du rendez-vous:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
-        return;
     }
 };
+
 
 export const deleteRendezVous = async (req: Request, res: Response) => {
     try {
