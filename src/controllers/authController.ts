@@ -40,7 +40,6 @@ export async function register(req: Request, res: Response) {
 }
 
 
-
 export async function login(req: Request, res: Response) {
     try {
         const { email, password } = req.body;
@@ -105,6 +104,23 @@ export async function modifierPassword(req: Request, res: Response) {
         return;
     } catch (err: any) {
         res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
+        return;
+    }
+}
+
+export async function logout(req: Request, res: Response) {
+    try {
+        // Supprimer le cookie JWT en le remplaçant par un cookie vide avec une expiration immédiate
+        res.clearCookie("jwt", {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production"
+        });
+        
+        res.status(200).json({ message: "Déconnexion réussie" });
+        return;
+    } catch (err: any) {
+        res.status(500).json({ message: "Erreur lors de la déconnexion", error: err.message });
         return;
     }
 }

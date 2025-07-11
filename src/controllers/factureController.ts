@@ -382,7 +382,18 @@ export const afficherAllFactures = async (req: Request, res: Response) => {
 export const afficherUne = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const facture = await Facture.findByPk(id);
+    const facture = await Facture.findByPk(id,{
+      include: [
+        {
+          model: Client,
+          attributes: ["nom", "prenom"], // choisis les champs que tu veux renvoyer
+        },
+        {
+          model: User,
+          attributes: ["speudo"],
+        }
+      ]
+    });
     if (!facture) {
       res.status(404).json({ message: "Facture introuvable" });
       return;
