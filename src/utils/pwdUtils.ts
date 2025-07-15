@@ -8,7 +8,5 @@ export async function hashPassword(password: string): Promise<string> {
     return bcryptjs.hash(password, saltRounds);
 }
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-    //compote le mdp brut avec le hachage 
-    //return true si les deux correspondent sinon false
     return bcryptjs.compare(password, hash);
 }

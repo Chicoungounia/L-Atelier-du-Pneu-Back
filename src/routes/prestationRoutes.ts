@@ -139,7 +139,6 @@ router.put("/modifier/one/:id",verifyTokenMiddleware, isAdmin, modifierPrestatio
  */
 router.put("/modifier/status/:id",verifyTokenMiddleware, isAdmin, modifierStatusPrestation);
 
-
 /**
  * @swagger
  * /prestations/afficher/tous:
@@ -228,7 +227,6 @@ router.get("/afficher/tous", verifyTokenMiddleware, afficherAllPrestations)
  *         description: Erreur serveur lors de la récupération des prestations actives.
  */
 router.get("/afficher/actif", verifyTokenMiddleware, afficherStatusAllTruePrestation);
-
 
 /**
  * @swagger

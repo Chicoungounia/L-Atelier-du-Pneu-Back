@@ -73,7 +73,7 @@ export const ajouterRendezVous = async (req: Request, res: Response) => {
             dateDebut: dateDebutObj,
             dateFin: dateFinObj,
             status: status || "Réserver",
-            timeZone, // Stocker le fuseau horaire
+            timeZone, // Stocker le fuseau horaire-S
         });
 
         res.status(201).json({ message: "Rendez-vous ajouté avec succès", rendezVous });
@@ -160,7 +160,6 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
     }
 };
 
-
 export const deleteRendezVous = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -180,7 +179,6 @@ export const deleteRendezVous = async (req: Request, res: Response) => {
         return;
     }
 };
-
 
 export const afficherRendezVous = async (req: Request, res: Response) => {
     try {
@@ -220,9 +218,6 @@ export const afficherAllRendezVous = async (req: Request, res: Response) => {
     }
   };
   
-  /**
-   * Afficher tous les rendez-vous avec le status "Réserver"
-   */
   export const afficherAllRendezVousReserver = async (req: Request, res: Response) => {
     try {
       const rendezVousReserves = await RendezVous.findAll({
@@ -237,9 +232,6 @@ export const afficherAllRendezVous = async (req: Request, res: Response) => {
     }
   };
   
-  /**
-   * Afficher tous les rendez-vous d'un client donné (via clientId)
-   */
   export const afficherAllRendezVousClient = async (req: Request, res: Response) => {
     try {
       const { clientId } = req.params;
@@ -261,7 +253,6 @@ export const afficherAllRendezVous = async (req: Request, res: Response) => {
       return;
     }
   };
-
 
   export async function searchRendezVous(req: Request, res: Response) {
     try {

@@ -58,7 +58,7 @@ User.init(
         role: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: "Employé", // Toujours employé par défaut
+            defaultValue: "Employé", 
             validate: {
                 isIn: [["Admin", "Ouvrier", "Employé"]],
             },
@@ -70,7 +70,7 @@ User.init(
         status: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: "Actif", // Toujours actif par défaut
+            defaultValue: "Actif", 
             validate: {
                 isIn: [["Actif", "Inactif"]],
             },
@@ -84,7 +84,6 @@ User.init(
         updatedAt: "updated_at",
         hooks: {
             beforeCreate: (user: User) => {
-                // Générer speudo : prenom + espace + première lettre de nom + .
                 user.speudo = `${user.prenom} ${user.nom.charAt(0)}.`;
             },
         },

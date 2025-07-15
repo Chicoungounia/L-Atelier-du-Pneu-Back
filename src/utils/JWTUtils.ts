@@ -1,9 +1,7 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-// Assure-toi que la clé correspond bien à ta variable d'environnement
 const SECRET_KEY: string | undefined = process.env.JWT_KEY;  
 
-// Vérifie dès le démarrage que la clé est définie
 if (!SECRET_KEY) {
     throw new Error('JWT_KEY n\'est pas définie');
 }

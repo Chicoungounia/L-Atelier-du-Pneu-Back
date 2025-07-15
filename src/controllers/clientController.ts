@@ -92,7 +92,6 @@ export const modifierClient = [verifyTokenMiddleware, async (req: Request, res: 
   }
 }];
 
-
 export const modifierStatusClient = [verifyTokenMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -136,7 +135,6 @@ export const modifierStatusClient = [verifyTokenMiddleware, async (req: Request,
   }
 }];
 
-
 export const afficherClientsActifs = [verifyTokenMiddleware, async (req: Request, res: Response) => {
   try {
     const clients = await Client.findAll({
@@ -152,7 +150,6 @@ export const afficherClientsActifs = [verifyTokenMiddleware, async (req: Request
   }
 }];
 
-
 export const afficherAllClients = [verifyTokenMiddleware, async (req: Request, res: Response) => {
   try {
     const clients = await Client.findAll();
@@ -164,7 +161,6 @@ export const afficherAllClients = [verifyTokenMiddleware, async (req: Request, r
     return;
   }
 }];
-
 
 export const afficherUnClient = [verifyTokenMiddleware, async (req: Request, res: Response) => {
   try {
@@ -192,8 +188,7 @@ export const afficherUnClient = [verifyTokenMiddleware, async (req: Request, res
   }
 }];
 
-
-export async function searchClient(req: Request, res: Response) {
+export async function searchClient(req: Request, res: Response, next: unknown) {
   try {
     const { id, nom, prenom, email, telephone, type } = req.query;
 

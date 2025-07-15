@@ -107,7 +107,6 @@ export const afficherPrestation = async (req: Request, res: Response) => {
   }
 };
 
-
 export const afficherStatusAllTruePrestation = async (req: Request, res: Response) => {
   try {
     const prestationsActives = await Prestation.findAll({
@@ -122,10 +121,6 @@ export const afficherStatusAllTruePrestation = async (req: Request, res: Respons
   }
 };
   
-  
- 
-
-
   export const afficherAllPrestations = async (req: Request, res: Response) => {
     try {
       const prestations = await Prestation.findAll();

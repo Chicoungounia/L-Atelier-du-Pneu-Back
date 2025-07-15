@@ -68,7 +68,6 @@ export async function modifierStatusUser(req: Request, res: Response) {
 
 export async function modifierRoleUser(req: Request, res: Response) {
     try {
-        // Vérification du token JWT
         const token = req.cookies?.jwt;
         if (!token) {
             res.status(401).json({ message: "Accès refusé, token manquant" });
@@ -77,31 +76,25 @@ export async function modifierRoleUser(req: Request, res: Response) {
 
         const decoded = verifyToken(token);
         if (!decoded || typeof decoded === "string" || decoded.role !== "Admin") {
-            res.status(403).json({ message: "Accès interdit, seuls les administrateurs peuvent modifier le rôle d'un utilisateur" });
+            res.status(403).json({ message: "Accès interdit, " });
             return;
         }
 
-        // Récupération des paramètres et du body
         const userId = req.params.id;
         const { role } = req.body;
 
-        console.log("Role reçu :", role); // Debug
-
-        // Vérification du rôle
         const validRoles = ["Admin", "Ouvrier", "Employé"];
         if (typeof role !== "string" || !validRoles.includes(role.trim())) {
             res.status(400).json({ message: `Le rôle doit être l'un des suivants : ${validRoles.join(", ")}` });
             return;
         }
 
-        // Vérification de l'existence de l'utilisateur
         const user = await User.findByPk(userId);
         if (!user) {
             res.status(404).json({ message: "Utilisateur non trouvé" });
             return;
         }
 
-        // Mise à jour du rôle avec récupération directe de l'utilisateur mis à jour
         const [updatedRows, updatedUsers] = await User.update(
             { role: role.trim() as "Admin" | "Ouvrier" | "Employé" },
             { where: { id: userId }, returning: true, logging: console.log }
@@ -112,7 +105,7 @@ export async function modifierRoleUser(req: Request, res: Response) {
             return;
         }
 
-        const updatedUser = updatedUsers[0]; // L'utilisateur mis à jour
+        const updatedUser = updatedUsers[0]; 
 
         console.log("Utilisateur mis à jour :", updatedUser);
 
@@ -172,9 +165,10 @@ export async function afficherAllUsers(req: Request, res: Response) {
             return;
         }
 
-        // Récupération de tous les utilisateurs
+        // Récupération de tous les utilisateurs triés par ID
         const users = await User.findAll({
             attributes: { exclude: ["hashedpassword"] }, // Exclure le mot de passe
+            order: [['id', 'ASC']] // Tri par ID croissant
         });
 
         res.status(200).json({ message: "Liste des utilisateurs récupérée avec succès", users });
@@ -199,10 +193,11 @@ export async function afficherUsersActif(req: Request, res: Response) {
             return;
         }
 
-        // Récupération des utilisateurs actifs
+        // Récupération des utilisateurs actifs triés par ID
         const users = await User.findAll({
             where: { status: "Actif" },
             attributes: { exclude: ["hashedpassword"] }, // Exclure le mot de passe
+            order: [['id', 'ASC']] // Tri par ID croissant
         });
 
         res.status(200).json({ message: "Liste des utilisateurs actifs récupérée avec succès", users });
@@ -219,7 +214,6 @@ export async function searchUsers(req: Request, res: Response) {
     try {
         const { id, nom, prenom, email } = req.query;
 
-        // Création d'une requête SQL dynamique avec filtres optionnels
         const query = `
         SELECT id, nom, prenom, email
         FROM users
@@ -231,7 +225,6 @@ export async function searchUsers(req: Request, res: Response) {
         ORDER BY nom ASC;
         `;
 
-        // Exécution sécurisée avec les valeurs des paramètres
         const utilisateurs = await sequelize.query(query, {
             replacements: {
                 id: id ? Number(id) : null,

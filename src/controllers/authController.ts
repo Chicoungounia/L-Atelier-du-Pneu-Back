@@ -66,8 +66,21 @@ export async function login(req: Request, res: Response) {
         }
 
         const token = generateToken({ id: user.id, email: user.email, role: user.role });
+        
         res.cookie("jwt", token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
-        res.status(200).json({ message: "Connexion réussie", token });
+        
+        res.cookie("speudo", user.speudo || "", { 
+            httpOnly: false, 
+            sameSite: "lax", 
+            secure: process.env.NODE_ENV === "production" 
+        });
+        
+        res.status(200).json({ 
+            message: "Connexion réussie", 
+            token,
+            speudo: user.speudo || ""
+        });
+        console.log("Utilisateur connecté :", user.speudo || "Aucun speudo défini");
         return;
     } catch (err: any) {
         res.status(500).json({ message: "Erreur interne du serveur", error: err.message });
@@ -110,17 +123,41 @@ export async function modifierPassword(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
     try {
-        // Supprimer le cookie JWT en le remplaçant par un cookie vide avec une expiration immédiate
         res.clearCookie("jwt", {
             httpOnly: true,
             sameSite: "lax",
-            secure: process.env.NODE_ENV === "production"
+            secure: process.env.NODE_ENV === "production",
+            path: "/"
         });
         
-        res.status(200).json({ message: "Déconnexion réussie" });
+        res.clearCookie("speudo", {
+            httpOnly: false,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            path: "/"
+        });
+
+        res.clearCookie("session", {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            path: "/"
+        });
+        
+        console.log("Utilisateur déconnecté - Cookies supprimés");
+        
+        res.status(200).json({ 
+            message: "Déconnexion réussie", 
+            redirect: "/login" 
+        });
         return;
     } catch (err: any) {
-        res.status(500).json({ message: "Erreur lors de la déconnexion", error: err.message });
+        console.error("Erreur lors de la déconnexion:", err);
+        res.status(500).json({ 
+            message: "Erreur lors de la déconnexion", 
+            error: err.message,
+            redirect: "/login" 
+        });
         return;
     }
 }

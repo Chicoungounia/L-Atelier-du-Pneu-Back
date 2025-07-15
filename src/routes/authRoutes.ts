@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, modifierPassword, register } from '../controllers/authController';
+import { login, modifierPassword, register, logout } from '../controllers/authController';
 import { verifyTokenMiddleware } from '../middlewares/verifyTokenMiddleware';
 import { validateSchema } from '../utils/joiUtils';
 import { loginSchema, registerSchema, updatePasswordSchema } from '../joiValidators/authValidators';
@@ -184,6 +184,33 @@ router.post('/login',validateSchema(loginSchema), login);
 *         description: Erreur interne du serveur.
 */
 router.put('/modifier/password',validateSchema(updatePasswordSchema), verifyTokenMiddleware, modifierPassword);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Déconnecter un utilisateur
+ *     description: Supprime les cookies d'authentification et déconnecte l'utilisateur.
+ *     tags:
+ *       - Authentification
+ *     responses:
+ *       200:
+ *         description: Déconnexion réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Déconnexion réussie"
+ *                 redirect:
+ *                   type: string
+ *                   example: "/login"
+ *       500:
+ *         description: Erreur lors de la déconnexion
+ */
+router.post('/logout', logout);
 
 
 

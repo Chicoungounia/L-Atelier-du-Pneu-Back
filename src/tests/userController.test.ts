@@ -1,193 +1,217 @@
 import { modifierUser, modifierStatusUser, afficherUser } from "../controllers/userController";
 import { User } from "../models/userModels";
-import sequelize from "../config/database";
+import { verifyToken } from "../utils/JWTUtils";
 
-// Mock de la fonction verifyToken
+// Mock des dépendances
 jest.mock("../utils/JWTUtils", () => ({
     verifyToken: jest.fn(),
 }));
 
-const { verifyToken } = require("../utils/JWTUtils");
+jest.mock("../models/userModels", () => ({
+    User: {
+        findByPk: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+    }
+}));
+
+// Mock console.log pour éviter les sorties dans les tests
+const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
 describe("User Controller", () => {
-    let tokenAdmin: string;
-    let tokenUser: string;
-    let userId: number;
+    let req: any;
+    let res: any;
+    let statusMock: jest.Mock;
+    let jsonMock: jest.Mock;
 
-    beforeAll(async () => {
-        // Préparer un utilisateur Admin et un autre standard pour les tests
-        const admin = await User.create({
-            nom: "Admin",
-            prenom: "Test",
-            speudo: "",
-            email: "admin@test.com",
-            hashedpassword: "hashedPassword",
-            role: "Admin",
-            status: "Actif",
-        });
-
-        const user = await User.create({
-            nom: "User",
-            prenom: "Test",
-            speudo: "",
-            email: "user@test.com",
-            hashedpassword: "hashedPassword",
-            role: "Employé",
-            status: "Actif",
-        });
-
-        tokenAdmin = "adminToken"; // Simule le token pour un admin
-        tokenUser = "userToken"; // Simule le token pour un utilisateur
-
-        userId = user.id;
-
-        // Mock de la fonction verifyToken
-        verifyToken.mockImplementation((token: string) => {
-            if (token === "adminToken") {
-                return { id: admin.id, role: "Admin" };
-            }
-            if (token === "userToken") {
-                return { id: user.id, role: "Employé" };
-            }
-            return null;
-        });
+    beforeEach(() => {
+        statusMock = jest.fn().mockReturnThis();
+        jsonMock = jest.fn();
+        req = { cookies: {}, params: {}, body: {} };
+        res = { status: statusMock, json: jsonMock };
+        jest.clearAllMocks();
     });
 
-    afterAll(async () => {
-        // Nettoyage de la base de données après les tests
-        await sequelize.sync({ force: true });
+    afterAll(() => {
+        consoleSpy.mockRestore();
     });
 
     describe("Modifier un utilisateur", () => {
         it("devrait retourner une erreur 401 si le token est manquant", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
-
-            // Passer un cookie vide pour simuler un token manquant
-            await modifierUser(
-                { cookies: {} } as any,  // Simule l'absence de cookie
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ message: "Accès refusé, token manquant" });
+            req.cookies = {};
+            
+            await modifierUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(401);
+            expect(jsonMock).toHaveBeenCalledWith({ message: "Accès refusé, token manquant" });
         });
 
         it("devrait retourner une erreur 403 si l'utilisateur n'est pas un admin", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
-
-            // Passer un token d'utilisateur non admin
-            await modifierUser(
-                { cookies: { jwt: tokenUser } } as any,  // Simule un token d'utilisateur
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(403);
-            expect(res.json).toHaveBeenCalledWith({ message: "Accès interdit, seuls les administrateurs peuvent modifier un utilisateur" });
-        });
-
-        it("devrait mettre à jour un utilisateur avec succès", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
-
-            // Passer un token admin et des données de mise à jour pour l'utilisateur
-            await modifierUser(
-                { cookies: { jwt: tokenAdmin }, params: { id: userId }, body: { nom: "NewName", prenom: "NewPrenom" } } as any,
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({
-                message: "Utilisateur mis à jour avec succès",
-                user: expect.objectContaining({ nom: "NewName", prenom: "NewPrenom" })
+            req.cookies = { jwt: "userToken" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Employé" });
+            
+            await modifierUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(403);
+            expect(jsonMock).toHaveBeenCalledWith({ 
+                message: "Accès interdit, seuls les administrateurs peuvent modifier un utilisateur" 
             });
         });
 
         it("devrait retourner une erreur 404 si l'utilisateur n'existe pas", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
+            req.cookies = { jwt: "adminToken" };
+            req.params = { id: "999" };
+            req.body = { nom: "Test", prenom: "User" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Admin" });
+            (User.findByPk as jest.Mock).mockResolvedValue(null);
+            
+            await modifierUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(404);
+            expect(jsonMock).toHaveBeenCalledWith({ message: "Utilisateur non trouvé" });
+        });
+
+        it("devrait mettre à jour un utilisateur avec succès", async () => {
+            const mockUser = {
+                id: 1,
+                nom: "Test",
+                prenom: "User",
+                update: jest.fn().mockResolvedValue(true)
             };
+            
+            req.cookies = { jwt: "adminToken" };
+            req.params = { id: "1" };
+            req.body = { nom: "NewName", prenom: "NewPrenom" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Admin" });
+            (User.findByPk as jest.Mock).mockResolvedValue(mockUser);
+            
+            await modifierUser(req, res);
+            
+            expect(mockUser.update).toHaveBeenCalledWith({
+                nom: "NewName",
+                prenom: "NewPrenom"
+            });
+            expect(statusMock).toHaveBeenCalledWith(200);
+            expect(jsonMock).toHaveBeenCalledWith({
+                message: "Utilisateur mis à jour avec succès",
+                user: mockUser
+            });
+        });
 
-            // Passer un id utilisateur inexistant pour simuler une erreur 404
-            await modifierUser(
-                { cookies: { jwt: tokenAdmin }, params: { id: 9999 }, body: { nom: "NonExistent", prenom: "User" } } as any,
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(404);
-            expect(res.json).toHaveBeenCalledWith({ message: "Utilisateur non trouvé" });
+        it("devrait gérer les erreurs du serveur", async () => {
+            req.cookies = { jwt: "adminToken" };
+            req.params = { id: "1" };
+            req.body = { nom: "Test" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Admin" });
+            (User.findByPk as jest.Mock).mockRejectedValue(new Error("Erreur base de données"));
+            
+            await modifierUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(500);
+            expect(jsonMock).toHaveBeenCalledWith({
+                message: "Erreur interne du serveur",
+                error: expect.any(Error)
+            });
         });
     });
 
     describe("Modifier le statut d'un utilisateur", () => {
         it("devrait retourner une erreur 401 si le token est manquant", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
-
-            await modifierStatusUser(
-                { cookies: {} } as any,  // Simule un cookie vide
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ message: "Accès refusé, token manquant" });
+            req.cookies = {};
+            
+            await modifierStatusUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(401);
+            expect(jsonMock).toHaveBeenCalledWith({ message: "Accès refusé, token manquant" });
         });
 
         it("devrait retourner une erreur 403 si l'utilisateur n'est pas un admin", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
-
-            await modifierStatusUser(
-                { cookies: { jwt: tokenUser }, params: { id: userId } } as any,  // Simule un token d'utilisateur
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(403);
-            expect(res.json).toHaveBeenCalledWith({ message: "Accès interdit, seuls les administrateurs peuvent modifier le statut d'un utilisateur" });
+            req.cookies = { jwt: "userToken" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Employé" });
+            
+            await modifierStatusUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(403);
+            expect(jsonMock).toHaveBeenCalledWith({ 
+                message: "Accès interdit, seuls les administrateurs peuvent modifier le statut d'un utilisateur" 
+            });
         });
 
         it("devrait modifier le statut d'un utilisateur avec succès", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
+            const mockUser = {
+                id: 1,
+                status: "Actif",
+                update: jest.fn().mockResolvedValue(true)
             };
-
-            await modifierStatusUser(
-                { cookies: { jwt: tokenAdmin }, params: { id: userId } } as any,  // Simule un token d'admin
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({ message: "Statut modifié avec succès : Inactif", user: expect.objectContaining({ status: "Inactif" }) });
+            
+            req.cookies = { jwt: "adminToken" };
+            req.params = { id: "1" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Admin" });
+            (User.findByPk as jest.Mock).mockResolvedValue(mockUser);
+            
+            await modifierStatusUser(req, res);
+            
+            expect(mockUser.update).toHaveBeenCalledWith({ status: "Inactif" });
+            expect(statusMock).toHaveBeenCalledWith(200);
+            expect(jsonMock).toHaveBeenCalledWith({
+                message: "Statut modifié avec succès : Inactif",
+                user: mockUser
+            });
         });
     });
 
     describe("Afficher un utilisateur", () => {
         it("devrait retourner une erreur 401 si le token est manquant", async () => {
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
+            req.cookies = {};
+            
+            await afficherUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(401);
+            expect(jsonMock).toHaveBeenCalledWith({ message: "Accès refusé, token manquant" });
+        });
+
+        it("devrait retourner une erreur 403 si le token est invalide", async () => {
+            req.cookies = { jwt: "invalidToken" };
+            (verifyToken as jest.Mock).mockReturnValue(null);
+            
+            await afficherUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(403);
+            expect(jsonMock).toHaveBeenCalledWith({ message: "Accès interdit, token invalide" });
+        });
+
+        it("devrait retourner une erreur 404 si l'utilisateur n'existe pas", async () => {
+            req.cookies = { jwt: "validToken" };
+            req.params = { id: "999" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Admin" });
+            (User.findByPk as jest.Mock).mockResolvedValue(null);
+            
+            await afficherUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(404);
+            expect(jsonMock).toHaveBeenCalledWith({ message: "Utilisateur non trouvé" });
+        });
+
+        it("devrait retourner l'utilisateur avec succès", async () => {
+            const mockUser = {
+                id: 1,
+                nom: "Test",
+                prenom: "User",
+                email: "test@example.com"
             };
-
-            await afficherUser(
-                { cookies: {} } as any,  // Simule un cookie vide
-                res as any
-            );
-
-            expect(res.status).toHaveBeenCalledWith(401);
-            expect(res.json).toHaveBeenCalledWith({ message: "Accès refusé, token manquant" });
+            
+            req.cookies = { jwt: "validToken" };
+            req.params = { id: "1" };
+            (verifyToken as jest.Mock).mockReturnValue({ id: 1, role: "Admin" });
+            (User.findByPk as jest.Mock).mockResolvedValue(mockUser);
+            
+            await afficherUser(req, res);
+            
+            expect(statusMock).toHaveBeenCalledWith(200);
+            expect(jsonMock).toHaveBeenCalledWith({
+                message: "Utilisateur récupéré avec succès",
+                user: mockUser
+            });
         });
     });
 });

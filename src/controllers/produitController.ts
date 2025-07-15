@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import Produit from "../models/produitModel";
 import sequelize from "../config/database";
 
-// Ajouter un produit avec status par défaut à true
 export const ajouterProduit = async (req: Request, res: Response) => {
   try {
     const {
@@ -56,7 +55,6 @@ export const ajouterProduit = async (req: Request, res: Response) => {
   }
 };
 
-// Modifier un produit sans obligation de taper le status
 export const modifierProduit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -148,7 +146,6 @@ export const modifierStatusProduit = async (req: Request, res: Response) => {
   }
 };
 
-
 export const afficherAllTrueProduit = async (req: Request, res: Response) => {
   try {
     const produitsActifs = await Produit.findAll({
@@ -189,7 +186,6 @@ export const afficherProduit = async (req: Request, res: Response) => {
   }
 };
 
-// Afficher tous les produits (actifs et inactifs)
 export const afficherAllProduit = async (req: Request, res: Response) => {
   try {
     const tousLesProduits = await Produit.findAll();
