@@ -46,7 +46,7 @@ describe("AuthController - login", () => {
     });
 
     it("devrait retourner une erreur 400 si les champs sont manquants", async () => {
-        req.body = { email: "jeromef7@hotmail.fr" }; // password manquant
+        req.body = { email: "jeromef7@hotmail.fr" }; 
         
         await login(req, res);
         

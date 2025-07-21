@@ -168,7 +168,6 @@ export const ajouterFacture = async (req: Request, res: Response) => {
   }
 };
 
-
 export const modifierFacture = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { produits = [], prestations = [], status_payement, mode_payement } = req.body;
@@ -291,7 +290,6 @@ export const modifierFacture = async (req: Request, res: Response) => {
   }
 };
 
-
 export const modifierTypeEtPayement = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { type, status_payement, mode_payement } = req.body;
@@ -378,7 +376,6 @@ export const afficherAllFactures = async (req: Request, res: Response) => {
   }
 };
 
-
 export const afficherUne = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
@@ -439,8 +436,6 @@ export const afficherAllApayer = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Erreur lors de la récupération des factures à payer", error });
   }
 };
-
-
 
 export const sommeTotalFactureParJour = async (req: Request, res: Response) => {
   try {

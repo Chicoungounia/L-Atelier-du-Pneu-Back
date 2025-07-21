@@ -28,6 +28,13 @@ export const ajouterRendezVous = async (req: Request, res: Response) => {
             return;
         }
 
+        // Vérification que la date de début n'est pas dans le passé
+        const maintenant = new Date();
+        if (dateDebutObj < maintenant) {
+            res.status(400).json({ message: "Impossible de créer un rendez-vous pour une date passée." });
+            return;
+        }
+
         const jour = dateDebutObj.getDay();
         if (jour === 0) {
             res.status(400).json({ message: "Aucun rendez-vous n'est autorisé le dimanche." });
@@ -102,6 +109,13 @@ export const modifierRendezVous = async (req: Request, res: Response) => {
 
         const dateDebutObj = moment.tz(dateDebut, timeZone).toDate();
         const dateFinObj = moment.tz(dateFin, timeZone).toDate();
+
+        // Vérification que la date de début n'est pas dans le passé
+        const maintenant = new Date();
+        if (dateDebutObj < maintenant) {
+            res.status(400).json({ message: "Impossible de modifier un rendez-vous pour une date passée." });
+            return;
+        }
 
         const jour = dateDebutObj.getDay();
         if (jour === 0) {

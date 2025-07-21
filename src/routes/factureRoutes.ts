@@ -486,9 +486,6 @@ router.get("/afficher/type/factures", verifyTokenMiddleware, afficherTypeFacture
  */
 router.get("/afficher/all/apayer", verifyTokenMiddleware, afficherAllApayer);
 
-
-
-
 /**
  * @swagger
  * /factures/afficher/jour/ca:
